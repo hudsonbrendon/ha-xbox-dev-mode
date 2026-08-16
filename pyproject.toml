@@ -14,8 +14,11 @@ dev = [
     "pytest-asyncio",
     "pytest-homeassistant-custom-component",
     "aioresponses",
-    "xbox-devportal @ file:///Users/hudsonbrendon/Github/xbox-devportal",
+    "xbox-devportal",
 ]
+
+[tool.uv.sources]
+xbox-devportal = { path = "../xbox-devportal" }
 
 [tool.uv]
 # The integration lives under custom_components/; this project is deps-only.

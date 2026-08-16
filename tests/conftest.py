@@ -34,16 +34,85 @@ def mock_devportal():
 
     Yields a dict keyed by method name; tests set `.return_value` (or
     `.side_effect`) before calling async_setup to customize responses.
+
+    Uses real method names from xbox-devportal library:
+    info, system_perf, processes, foreground_app, packages, launch, terminate,
+    settings, set_setting, sandbox, smb_credentials, screenshot, restart,
+    shutdown, list_files, upload_file, delete_file, install, uninstall, close.
     """
+    from xbox_devportal.models import DeviceInfo, SystemPerf, Process, Package, Setting, SmbShare
+
     defaults = {
-        "authenticate": AsyncMock(return_value="tok"),
-        "get_device_info": AsyncMock(return_value={}),
-        "get_system_perf": AsyncMock(return_value={}),
-        "list_processes": AsyncMock(return_value=[]),
-        "list_packages": AsyncMock(return_value=[]),
-        "get_setting": AsyncMock(return_value=None),
+        "info": AsyncMock(
+            return_value=DeviceInfo(
+                computer_name="XBOX",
+                os_version="26100.9426",
+                platform="Xbox Series S",
+            )
+        ),
+        "system_perf": AsyncMock(
+            return_value=SystemPerf(
+                cpu_load=3,
+                total_pages=327680,
+                available_pages=45557,
+                committed_pages=162427,
+                page_size=4096,
+                gpu_dedicated=134217728,
+                gpu_dedicated_used=123781120,
+            )
+        ),
+        "processes": AsyncMock(
+            return_value=[
+                Process(
+                    image_name="Explorer.EXE",
+                    package_full_name="Microsoft.Xbox.Dashboard_2301.1001.1.0_x64__8wekyb3d8bbwe",
+                    private_working_set=104857600,
+                ),
+            ]
+        ),
+        "foreground_app": AsyncMock(
+            return_value=Process(
+                image_name="RetroArch.exe",
+                package_full_name="1e4c_1.19.0.0_x64__1e4c_x!App",
+                private_working_set=209715200,
+            )
+        ),
+        "packages": AsyncMock(
+            return_value=[
+                Package(
+                    name="RetroArch",
+                    package_full_name="1e4c_1.19.0.0_x64__1e4c_x!App",
+                    package_relative_id="1e4c_x!App",
+                    can_uninstall=True,
+                ),
+            ]
+        ),
+        "launch": AsyncMock(return_value=None),
+        "terminate": AsyncMock(return_value=None),
+        "settings": AsyncMock(
+            return_value={
+                "TVResolution": Setting("TVResolution", "1080p", ("720p", "1080p", "2160p")),
+                "AllowHDR": Setting("AllowHDR", "true", ()),
+            }
+        ),
         "set_setting": AsyncMock(return_value=None),
-        "list_smb_shares": AsyncMock(return_value=[]),
+        "sandbox": AsyncMock(return_value="RETAIL"),
+        "smb_credentials": AsyncMock(
+            return_value=SmbShare(
+                path=r"\\xbox.local\Developer$",
+                username="xbox_dev",
+                password="devpwd",
+            )
+        ),
+        "screenshot": AsyncMock(return_value=b"\x89PNG\r\n\x1a\n"),  # PNG header
+        "restart": AsyncMock(return_value=None),
+        "shutdown": AsyncMock(return_value=None),
+        "list_files": AsyncMock(return_value=[]),
+        "upload_file": AsyncMock(return_value=None),
+        "delete_file": AsyncMock(return_value=None),
+        "install": AsyncMock(return_value=None),
+        "uninstall": AsyncMock(return_value=None),
+        "close": AsyncMock(return_value=None),
     }
     with patch.multiple(
         "xbox_devportal.XboxDevPortal", create=True, **defaults
