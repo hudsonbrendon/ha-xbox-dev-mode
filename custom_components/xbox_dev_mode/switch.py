@@ -15,43 +15,34 @@ class XboxSwitchDescription(SwitchEntityDescription):
     """Description for Xbox switch entities."""
 
     value_fn: Callable[[XboxData], bool] = field(default=lambda data: False)
+    setting_name: str | None = None
     dev_only: bool = True
+
+
+# Single source of truth for switch settings: (key, setting_name)
+SETTING_SWITCHES = [
+    ("allow_hdr", "AllowHDR"),
+    ("allow_4k", "Allow4K"),
+    ("allow_vrr", "AllowVRR"),
+    ("allow_allm", "AllowALLM"),
+]
+
+
+def _make_value_fn(setting_name: str) -> Callable[[XboxData], bool]:
+    """Generate value_fn for a switch."""
+    return lambda data: data.settings.get(setting_name).value == "true" if data.settings.get(setting_name) else False
 
 
 SWITCHES: list[XboxSwitchDescription] = [
     XboxSwitchDescription(
-        key="allow_hdr",
-        translation_key="allow_hdr",
-        value_fn=lambda data: data.settings.get("AllowHDR").value == "true" if data.settings.get("AllowHDR") else False,
+        key=key,
+        translation_key=key,
+        value_fn=_make_value_fn(setting_name),
+        setting_name=setting_name,
         dev_only=True,
-    ),
-    XboxSwitchDescription(
-        key="allow_4k",
-        translation_key="allow_4k",
-        value_fn=lambda data: data.settings.get("Allow4K").value == "true" if data.settings.get("Allow4K") else False,
-        dev_only=True,
-    ),
-    XboxSwitchDescription(
-        key="allow_vrr",
-        translation_key="allow_vrr",
-        value_fn=lambda data: data.settings.get("AllowVRR").value == "true" if data.settings.get("AllowVRR") else False,
-        dev_only=True,
-    ),
-    XboxSwitchDescription(
-        key="allow_allm",
-        translation_key="allow_allm",
-        value_fn=lambda data: data.settings.get("AllowALLM").value == "true" if data.settings.get("AllowALLM") else False,
-        dev_only=True,
-    ),
+    )
+    for key, setting_name in SETTING_SWITCHES
 ]
-
-# Map switch keys to their Xbox Device Portal names
-SETTING_NAME_MAP = {
-    "allow_hdr": "AllowHDR",
-    "allow_4k": "Allow4K",
-    "allow_vrr": "AllowVRR",
-    "allow_allm": "AllowALLM",
-}
 
 
 class XboxSwitch(XboxEntity, SwitchEntity):
@@ -91,31 +82,32 @@ class XboxSwitch(XboxEntity, SwitchEntity):
         Switch is available if:
         1. Coordinator is available (base class check)
         2. If _dev_only=True, console must be in dev_mode
-        3. The setting has been fetched (value is not None)
+        3. The setting has been fetched (present in settings dict)
         """
         base_available = super().available
         if not base_available:
             return False
 
         # Check if the setting has been fetched
-        setting_name = SETTING_NAME_MAP.get(self.entity_description.key)
-        if setting_name:
-            setting = self.coordinator.data.settings.get(setting_name)
-            if setting is None:
-                return False
+        setting_name = self.entity_description.setting_name
+        if setting_name is None:
+            return False
+
+        if self.coordinator.data.settings.get(setting_name) is None:
+            return False
 
         return True
 
     async def async_turn_on(self, **kwargs) -> None:
         """Turn on the switch."""
-        setting_name = SETTING_NAME_MAP.get(self.entity_description.key)
+        setting_name = self.entity_description.setting_name
         if setting_name:
             await self.coordinator.client.set_setting(setting_name, "true")
             await self.coordinator.async_request_refresh()
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn off the switch."""
-        setting_name = SETTING_NAME_MAP.get(self.entity_description.key)
+        setting_name = self.entity_description.setting_name
         if setting_name:
             await self.coordinator.client.set_setting(setting_name, "false")
             await self.coordinator.async_request_refresh()

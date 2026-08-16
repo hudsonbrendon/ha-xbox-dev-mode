@@ -16,70 +16,51 @@ class XboxSelectDescription(SelectEntityDescription):
 
     value_fn: Callable[[XboxData], Any] = field(default=lambda data: None)
     options_fn: Callable[[XboxData], list[str]] = field(default=lambda data: [])
+    setting_name: str | None = None  # Xbox Device Portal setting name (None for app select)
     dev_only: bool = True
+
+
+# Single source of truth for setting selects: (key, setting_name)
+SETTING_SELECTS = [
+    ("tv_resolution", "TVResolution"),
+    ("power_mode", "PowerMode"),
+    ("hdmi_audio", "HDMIAudio"),
+    ("color_space", "ColorSpace"),
+    ("headset_format", "HeadsetFormat"),
+    ("default_app", "DefaultApp"),
+]
+
+
+def _make_value_fn(setting_name: str) -> Callable[[XboxData], Any]:
+    """Generate value_fn for a setting select."""
+    return lambda data: data.settings.get(setting_name).value if data.settings.get(setting_name) else None
+
+
+def _make_options_fn(setting_name: str) -> Callable[[XboxData], list[str]]:
+    """Generate options_fn for a setting select."""
+    return lambda data: list(data.settings.get(setting_name).options) if data.settings.get(setting_name) else []
 
 
 SELECTS: list[XboxSelectDescription] = [
     XboxSelectDescription(
         key="app",
         translation_key="app",
-        value_fn=lambda data: None,  # Will be set dynamically from coordinator.selected_app
+        value_fn=lambda data: None,  # Set dynamically from coordinator.selected_app
         options_fn=lambda data: [pkg.name for pkg in data.sideloaded] if data.sideloaded else [],
+        setting_name=None,
         dev_only=True,
     ),
+] + [
     XboxSelectDescription(
-        key="tv_resolution",
-        translation_key="tv_resolution",
-        value_fn=lambda data: data.settings.get("TVResolution").value if data.settings.get("TVResolution") else None,
-        options_fn=lambda data: list(data.settings.get("TVResolution").options) if data.settings.get("TVResolution") else [],
+        key=key,
+        translation_key=key,
+        value_fn=_make_value_fn(setting_name),
+        options_fn=_make_options_fn(setting_name),
+        setting_name=setting_name,
         dev_only=True,
-    ),
-    XboxSelectDescription(
-        key="power_mode",
-        translation_key="power_mode",
-        value_fn=lambda data: data.settings.get("PowerMode").value if data.settings.get("PowerMode") else None,
-        options_fn=lambda data: list(data.settings.get("PowerMode").options) if data.settings.get("PowerMode") else [],
-        dev_only=True,
-    ),
-    XboxSelectDescription(
-        key="hdmi_audio",
-        translation_key="hdmi_audio",
-        value_fn=lambda data: data.settings.get("HDMIAudio").value if data.settings.get("HDMIAudio") else None,
-        options_fn=lambda data: list(data.settings.get("HDMIAudio").options) if data.settings.get("HDMIAudio") else [],
-        dev_only=True,
-    ),
-    XboxSelectDescription(
-        key="color_space",
-        translation_key="color_space",
-        value_fn=lambda data: data.settings.get("ColorSpace").value if data.settings.get("ColorSpace") else None,
-        options_fn=lambda data: list(data.settings.get("ColorSpace").options) if data.settings.get("ColorSpace") else [],
-        dev_only=True,
-    ),
-    XboxSelectDescription(
-        key="headset_format",
-        translation_key="headset_format",
-        value_fn=lambda data: data.settings.get("HeadsetFormat").value if data.settings.get("HeadsetFormat") else None,
-        options_fn=lambda data: list(data.settings.get("HeadsetFormat").options) if data.settings.get("HeadsetFormat") else [],
-        dev_only=True,
-    ),
-    XboxSelectDescription(
-        key="default_app",
-        translation_key="default_app",
-        value_fn=lambda data: data.settings.get("DefaultApp").value if data.settings.get("DefaultApp") else None,
-        options_fn=lambda data: list(data.settings.get("DefaultApp").options) if data.settings.get("DefaultApp") else [],
-        dev_only=True,
-    ),
+    )
+    for key, setting_name in SETTING_SELECTS
 ]
-
-# Map setting keys to their Xbox Device Portal names
-SETTING_NAME_MAP = {
-    "tv_resolution": "TVResolution",
-    "power_mode": "PowerMode",
-    "hdmi_audio": "HDMIAudio",
-    "color_space": "ColorSpace",
-    "headset_format": "HeadsetFormat",
-    "default_app": "DefaultApp",
-}
 
 
 class XboxSelect(XboxEntity, SelectEntity):
@@ -136,8 +117,12 @@ class XboxSelect(XboxEntity, SelectEntity):
         if self.entity_description.key == "app":
             return True
 
-        # For settings, only available if the setting has been fetched (has options)
-        if not self.options:
+        # For settings, only available if the setting has been fetched (present in settings dict)
+        setting_name = self.entity_description.setting_name
+        if setting_name is None:
+            return False
+
+        if self.coordinator.data.settings.get(setting_name) is None:
             return False
 
         return True
@@ -148,8 +133,8 @@ class XboxSelect(XboxEntity, SelectEntity):
             # Set selected app on coordinator
             self.coordinator.selected_app = option
         else:
-            # Call set_setting on client with the mapped setting name
-            setting_name = SETTING_NAME_MAP.get(self.entity_description.key)
+            # Call set_setting on client with the setting name from description
+            setting_name = self.entity_description.setting_name
             if setting_name:
                 await self.coordinator.client.set_setting(setting_name, option)
                 # Request refresh to get updated state
