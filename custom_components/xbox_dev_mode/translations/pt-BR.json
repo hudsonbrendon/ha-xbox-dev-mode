@@ -55,6 +55,21 @@
     },
     "binary_sensor": {
       "dev_mode": { "name": "Modo Desenvolvedor" }
+    },
+    "select": {
+      "app": { "name": "Aplicativo" },
+      "tv_resolution": { "name": "Resolução da TV" },
+      "power_mode": { "name": "Modo de Energia" },
+      "hdmi_audio": { "name": "Áudio HDMI" },
+      "color_space": { "name": "Espaço de Cores" },
+      "headset_format": { "name": "Formato de Headset" },
+      "default_app": { "name": "Aplicativo Padrão" }
+    },
+    "switch": {
+      "allow_hdr": { "name": "Permitir HDR" },
+      "allow_4k": { "name": "Permitir 4K" },
+      "allow_vrr": { "name": "Permitir VRR" },
+      "allow_allm": { "name": "Permitir ALLM" }
     }
   }
 }

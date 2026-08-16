@@ -25,6 +25,9 @@ def _mock_async_ping():
         yield
 
 
+_mock_devportal_instance = None
+
+
 @pytest.fixture(autouse=True)
 def _mock_xbox_devportal():
     """Mock XboxDevPortal globally to prevent HTTP requests in tests.
@@ -32,6 +35,7 @@ def _mock_xbox_devportal():
     Default mocks all methods to prevent real network calls with proper
     return values that match the xbox-devportal library's actual types.
     """
+    global _mock_devportal_instance
     from xbox_devportal.models import DeviceInfo, SystemPerf, Process, Package, Setting
 
     with patch("custom_components.xbox_dev_mode.XboxDevPortal") as mock_portal_class, \
@@ -81,9 +85,12 @@ def _mock_xbox_devportal():
         )
         mock_instance.screenshot = AsyncMock(return_value=b"\x89PNG\r\n\x1a\n")
         mock_instance.sandbox = AsyncMock(return_value="XDKS.1")
+        mock_instance.set_setting = AsyncMock()
         mock_portal_class.return_value = mock_instance
         mock_xbox.return_value = mock_instance
+        _mock_devportal_instance = mock_instance
         yield mock_instance
+        _mock_devportal_instance = None
 
 
 @pytest.fixture(autouse=True)
@@ -108,9 +115,10 @@ def mock_devportal():
     """Fixture providing reference to mock portal methods.
 
     The actual mocking is done by the autouse _mock_xbox_devportal fixture.
-    This fixture just ensures the mock is active for tests that request it.
+    This fixture returns the reference to the mock instance.
     """
-    yield  # ponytail: just establishes dependency; real mocks are in autouse fixture
+    global _mock_devportal_instance
+    return _mock_devportal_instance
 
 
 @pytest.fixture
