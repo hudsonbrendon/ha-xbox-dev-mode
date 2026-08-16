@@ -40,5 +40,21 @@
         }
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "console_state": { "name": "Estado do Console" },
+      "foreground_app": { "name": "Aplicativo em Primeiro Plano" },
+      "cpu_load": { "name": "Uso de CPU" },
+      "memory_used": { "name": "Memória Usada" },
+      "memory_available": { "name": "Memória Disponível" },
+      "gpu_memory_used": { "name": "Memória de GPU Usada" },
+      "sideloaded_apps": { "name": "Aplicativos Sideloaded" },
+      "sandbox": { "name": "Sandbox" },
+      "os_version": { "name": "Versão do OS" }
+    },
+    "binary_sensor": {
+      "dev_mode": { "name": "Modo Desenvolvedor" }
+    }
   }
 }

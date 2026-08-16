@@ -13,33 +13,36 @@ class XboxEntity(CoordinatorEntity[XboxDevModeCoordinator]):
     sync with the coordinator.
     """
 
+    _attr_has_entity_name = True
     _dev_only: bool = True
 
-    def __init__(self, coordinator: XboxDevModeCoordinator, entry_id: str):
+    def __init__(self, coordinator: XboxDevModeCoordinator, entry_id: str, entry_unique_id: str):
         """Initialize Xbox entity.
 
         Args:
             coordinator: The coordinator for this entity.
             entry_id: The config entry ID.
+            entry_unique_id: The config entry's unique ID (stable device identifier).
         """
         super().__init__(coordinator)
         self._entry_id = entry_id
+        self._entry_unique_id = entry_unique_id
 
     @property
     def device_info(self) -> DeviceInfo:
-        """Return device information."""
-        if not self.coordinator.data or not self.coordinator.data.info:
-            # Fallback device info when no data is available yet
-            return DeviceInfo(
-                identifiers={(DOMAIN, "unknown")},
-                manufacturer="Microsoft",
-                model="Unknown",
-                name="Xbox",
-            )
+        """Return device information.
+
+        Uses entry unique_id as stable identifier (does not change across
+        console state transitions). Model is cosmetic and can fallback.
+        """
+        model = "Unknown"
+        if self.coordinator.data and self.coordinator.data.info:
+            model = self.coordinator.data.info.platform
+
         return DeviceInfo(
-            identifiers={(DOMAIN, self.coordinator.data.info.computer_name)},
+            identifiers={(DOMAIN, self._entry_unique_id)},
             manufacturer="Microsoft",
-            model=self.coordinator.data.info.platform,
+            model=model,
             name="Xbox",
         )
 

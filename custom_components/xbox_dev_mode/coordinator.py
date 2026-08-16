@@ -32,6 +32,7 @@ class XboxData:
     sideloaded: list[Package] = field(default_factory=list)
     settings: dict[str, Setting] = field(default_factory=dict)
     screenshot: bytes | None = None
+    sandbox: str | None = None
 
 
 class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
@@ -129,6 +130,11 @@ class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
         if self._due(self._shot_iv):
             self._last_shot = await self.client.screenshot()
 
+        # Fetch sandbox mode on settings cadence (rarely changes)
+        sandbox = None
+        if self._due(self._settings_iv):
+            sandbox = await self.client.sandbox()
+
         return XboxData(
             state=STATE_DEV,
             info=info,
@@ -137,4 +143,5 @@ class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
             sideloaded=side,
             settings=self._last_settings,
             screenshot=self._last_shot,
+            sandbox=sandbox,
         )

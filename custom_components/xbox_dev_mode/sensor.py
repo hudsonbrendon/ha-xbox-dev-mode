@@ -94,7 +94,7 @@ SENSORS: list[XboxSensorDescription] = [
     XboxSensorDescription(
         key="sandbox",
         translation_key="sandbox",
-        value_fn=lambda data: data.settings.get("Sandbox", {}).value if data.settings else None,
+        value_fn=lambda data: data.sandbox,
         dev_only=False,
     ),
     XboxSensorDescription(
@@ -115,6 +115,7 @@ class XboxSensor(XboxEntity, SensorEntity):
         self,
         coordinator: XboxDevModeCoordinator,
         entry_id: str,
+        entry_unique_id: str,
         description: XboxSensorDescription,
     ):
         """Initialize Xbox sensor.
@@ -122,15 +123,13 @@ class XboxSensor(XboxEntity, SensorEntity):
         Args:
             coordinator: The coordinator for this entity.
             entry_id: The config entry ID.
+            entry_unique_id: The config entry's unique ID.
             description: The sensor description.
         """
-        super().__init__(coordinator, entry_id)
+        super().__init__(coordinator, entry_id, entry_unique_id)
         self.entity_description = description
         self._dev_only = description.dev_only
         self._attr_unique_id = f"{entry_id}_{description.key}"
-        # Set display name - will be slugified to form entity_id
-        # Using key ensures entity_id matches expected format: xbox_<key>
-        self._attr_name = f"Xbox {description.key.replace('_', ' ').title()}"
 
     @property
     def native_value(self) -> Any:
@@ -147,7 +146,7 @@ async def async_setup_entry(
     coordinator = entry.runtime_data
 
     entities = [
-        XboxSensor(coordinator, entry.entry_id, description)
+        XboxSensor(coordinator, entry.entry_id, entry.unique_id, description)
         for description in SENSORS
     ]
 

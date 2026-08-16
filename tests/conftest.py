@@ -104,55 +104,12 @@ def _instant_request_refresh():
 
 @pytest.fixture
 def mock_devportal():
-    """Fixture providing default mock data for coordinator tests.
+    """Fixture providing reference to mock portal methods.
 
-    This fixture doesn't patch anything; instead it provides the data
-    that the autouse _mock_xbox_devportal fixture should return.
+    The actual mocking is done by the autouse _mock_xbox_devportal fixture.
+    This fixture just ensures the mock is active for tests that request it.
     """
-    from xbox_devportal.models import DeviceInfo, SystemPerf, Process, Package, Setting, SmbShare
-
-    return {
-        "info": DeviceInfo(
-            computer_name="XBOX",
-            os_version="26100.9426",
-            platform="Xbox Series S",
-        ),
-        "system_perf": SystemPerf(
-            cpu_load=3,
-            total_pages=327680,
-            available_pages=45557,
-            committed_pages=162427,
-            page_size=4096,
-            gpu_dedicated=134217728,
-            gpu_dedicated_used=123781120,
-        ),
-        "processes": [
-            Process(
-                image_name="Explorer.EXE",
-                package_full_name="Microsoft.Xbox.Dashboard_2301.1001.1.0_x64__8wekyb3d8bbwe",
-                private_working_set=104857600,
-            ),
-        ],
-        "foreground_app": Process(
-            image_name="RetroArch.exe",
-            package_full_name="1e4c_1.19.0.0_x64__1e4c_x!App",
-            private_working_set=209715200,
-        ),
-        "packages": [
-            Package(
-                name="RetroArch",
-                package_full_name="1e4c_1.19.0.0_x64__1e4c_x!App",
-                package_relative_id="1e4c_x!App",
-                can_uninstall=True,
-            ),
-        ],
-        "settings": {
-            "TVResolution": Setting("TVResolution", "1080p", ("720p", "1080p", "2160p")),
-            "AllowHDR": Setting("AllowHDR", "true", ()),
-        },
-        "sandbox": "RETAIL",
-        "screenshot": b"\x89PNG\r\n\x1a\n",  # PNG header
-    }
+    yield  # ponytail: just establishes dependency; real mocks are in autouse fixture
 
 
 @pytest.fixture
@@ -221,4 +178,4 @@ async def setup_integration_off(hass, mock_devportal):
         await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
 
-    yield hass
+        yield hass

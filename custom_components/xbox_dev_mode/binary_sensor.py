@@ -30,6 +30,7 @@ class XboxBinarySensor(XboxEntity, BinarySensorEntity):
         self,
         coordinator: XboxDevModeCoordinator,
         entry_id: str,
+        entry_unique_id: str,
         description: BinarySensorEntityDescription,
     ):
         """Initialize Xbox binary sensor.
@@ -37,15 +38,13 @@ class XboxBinarySensor(XboxEntity, BinarySensorEntity):
         Args:
             coordinator: The coordinator for this entity.
             entry_id: The config entry ID.
+            entry_unique_id: The config entry's unique ID.
             description: The binary sensor description.
         """
-        super().__init__(coordinator, entry_id)
+        super().__init__(coordinator, entry_id, entry_unique_id)
         self.entity_description = description
         self._dev_only = False  # dev_mode sensor is always available
         self._attr_unique_id = f"{entry_id}_{description.key}"
-        # Set display name - will be slugified to form entity_id
-        # Using key ensures entity_id matches expected format: xbox_<key>
-        self._attr_name = f"Xbox {description.key.replace('_', ' ').title()}"
 
     @property
     def is_on(self) -> bool:
@@ -62,7 +61,7 @@ async def async_setup_entry(
     coordinator = entry.runtime_data
 
     entities = [
-        XboxBinarySensor(coordinator, entry.entry_id, description)
+        XboxBinarySensor(coordinator, entry.entry_id, entry.unique_id, description)
         for description in BINARY_SENSORS
     ]
 
