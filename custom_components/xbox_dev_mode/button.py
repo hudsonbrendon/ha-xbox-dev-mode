@@ -7,7 +7,7 @@ from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .coordinator import XboxData, XboxDevModeCoordinator
+from .coordinator import XboxDevModeCoordinator
 from .entity import XboxEntity
 
 
@@ -26,8 +26,7 @@ BUTTONS: list[XboxButtonDescription] = [
         translation_key="launch_app",
         press_fn=lambda coordinator: coordinator.client.launch(
             _get_package_full_name(coordinator)
-        ),
-        dev_only=True,
+        ) if _get_package_full_name(coordinator) else None,
     ),
     XboxButtonDescription(
         key="terminate_foreground",
@@ -35,7 +34,6 @@ BUTTONS: list[XboxButtonDescription] = [
         press_fn=lambda coordinator: coordinator.client.terminate(
             coordinator.data.foreground.package_full_name
         ) if coordinator.data.foreground else None,
-        dev_only=True,
     ),
     XboxButtonDescription(
         key="restart",
@@ -43,7 +41,6 @@ BUTTONS: list[XboxButtonDescription] = [
         press_fn=lambda coordinator: coordinator.client.restart(),
         device_class="restart",
         entity_category=EntityCategory.CONFIG,
-        dev_only=True,
     ),
     XboxButtonDescription(
         key="shutdown",
@@ -51,7 +48,6 @@ BUTTONS: list[XboxButtonDescription] = [
         press_fn=lambda coordinator: coordinator.client.shutdown(),
         device_class="restart",
         entity_category=EntityCategory.CONFIG,
-        dev_only=True,
     ),
 ]
 

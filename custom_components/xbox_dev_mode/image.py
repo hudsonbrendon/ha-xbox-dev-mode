@@ -30,9 +30,8 @@ class XboxScreenImage(XboxEntity, ImageEntity):
             entry_unique_id: The config entry's unique ID.
         """
         XboxEntity.__init__(self, coordinator, entry_id, entry_unique_id)
+        ImageEntity.__init__(self, coordinator.hass)
         self._attr_unique_id = f"{entry_id}_screen"
-        # Initialize access_tokens as required by ImageEntity.state_attributes
-        self.access_tokens: list[str] = []
 
     @property
     def available(self) -> bool:
@@ -51,30 +50,6 @@ class XboxScreenImage(XboxEntity, ImageEntity):
             return False
 
         return True
-
-    @property
-    def entity_picture(self) -> str | None:
-        """Return the entity picture URL.
-
-        Override ImageEntity.entity_picture to handle empty access_tokens.
-        """
-        # If no access tokens, return None to avoid IndexError
-        if not self.access_tokens:
-            return None
-        # Otherwise use parent implementation
-        return super().entity_picture
-
-    @property
-    def state_attributes(self) -> dict[str, any] | None:
-        """Return the state attributes.
-
-        Override ImageEntity.state_attributes to handle empty access_tokens.
-        """
-        # If no access tokens, return None to avoid IndexError
-        if not self.access_tokens:
-            return None
-        # Otherwise use parent implementation
-        return super().state_attributes
 
     @property
     def image_last_updated(self) -> datetime | None:

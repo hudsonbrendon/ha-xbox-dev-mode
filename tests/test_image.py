@@ -22,6 +22,18 @@ async def test_image_unavailable_without_screenshot_enabled(hass, setup_integrat
     """
     state = hass.states.get("image.xbox_screen")
     # Image entity should exist regardless
-    if state is not None:
-        # If entity exists, it should not be available (may be unavailable or unknown initially)
-        assert state.state in ("unavailable", "unknown")
+    assert state is not None
+    # If entity exists, it should not be available (may be unavailable or unknown initially)
+    assert state.state in ("unavailable", "unknown")
+
+
+async def test_image_entity_picture_is_populated(hass, setup_integration_with_shot, mock_devportal):
+    """Test entity_picture is populated once a screenshot has been fetched.
+
+    The Lovelace image card builds its proxy URL from entity_picture. If
+    ImageEntity.__init__ is never called, access_tokens stays empty forever
+    and entity_picture is permanently None, so the card never shows anything.
+    """
+    state = hass.states.get("image.xbox_screen")
+    assert state is not None
+    assert state.attributes.get("entity_picture") is not None
