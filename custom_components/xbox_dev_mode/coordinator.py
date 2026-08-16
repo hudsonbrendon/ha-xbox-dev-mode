@@ -96,8 +96,6 @@ class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
         Returns:
             XboxData with current state and telemetry.
         """
-        self._tick += 1
-
         # Step 1: Ping device
         ping = await async_ping(
             self._host, count=1, timeout=1, privileged=False
@@ -134,6 +132,10 @@ class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
         sandbox = None
         if self._due(self._settings_iv):
             sandbox = await self.client.sandbox()
+
+        # Advance cadence tick only after a successful dev-mode cycle, and
+        # after the _due() checks above (so tick 0 = first cycle = due).
+        self._tick += 1
 
         return XboxData(
             state=STATE_DEV,

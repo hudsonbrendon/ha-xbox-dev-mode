@@ -80,6 +80,7 @@ def _mock_xbox_devportal():
             }
         )
         mock_instance.screenshot = AsyncMock(return_value=b"\x89PNG\r\n\x1a\n")
+        mock_instance.sandbox = AsyncMock(return_value="XDKS.1")
         mock_portal_class.return_value = mock_instance
         mock_xbox.return_value = mock_instance
         yield mock_instance
