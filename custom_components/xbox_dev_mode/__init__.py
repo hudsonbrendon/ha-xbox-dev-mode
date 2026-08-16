@@ -41,7 +41,7 @@ async def async_setup_entry(hass, entry) -> bool:
 
     # Create and register coordinator
     coordinator = XboxDevModeCoordinator(
-        hass, client, host, scan=scan_iv, shot=shot_iv, settings_iv=settings_iv
+        hass, client, host, scan=scan_iv, shot=shot_iv, settings_iv=settings_iv, entry=entry
     )
 
     # Perform initial data fetch

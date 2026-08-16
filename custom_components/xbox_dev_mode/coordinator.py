@@ -43,7 +43,7 @@ class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
     - Device Portal responsive → STATE_DEV (with full telemetry)
     """
 
-    def __init__(self, hass, client, host, scan, shot, settings_iv):
+    def __init__(self, hass, client, host, scan, shot, settings_iv, entry=None):
         """Initialize coordinator.
 
         Args:
@@ -53,9 +53,10 @@ class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
             scan: Scan interval in seconds
             shot: Screenshot interval in seconds
             settings_iv: Settings fetch interval in seconds
+            entry: Config entry (optional, for first refresh)
         """
         super().__init__(
-            hass, _LOGGER, name=DOMAIN, update_interval=timedelta(seconds=scan)
+            hass, _LOGGER, name=DOMAIN, update_interval=timedelta(seconds=scan), config_entry=entry
         )
         self.client = client
         self._host = host

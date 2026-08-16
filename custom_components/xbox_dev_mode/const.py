@@ -18,5 +18,5 @@ DEFAULT_SCAN_INTERVAL = 30
 DEFAULT_SCREENSHOT_INTERVAL = 60
 DEFAULT_SETTINGS_INTERVAL = 120
 
-# Platforms (empty in B1; populated incrementally in B4-B6)
-PLATFORMS = []
+# Platforms (populated incrementally in B4-B6)
+PLATFORMS = ["binary_sensor", "sensor"]
