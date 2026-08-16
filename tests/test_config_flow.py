@@ -1,6 +1,8 @@
 from unittest.mock import AsyncMock, patch
 from homeassistant import data_entry_flow
+from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
 from homeassistant.helpers.service_info.ssdp import SsdpServiceInfo
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.xbox_dev_mode.const import DOMAIN
 
 
@@ -38,3 +40,22 @@ async def test_ssdp_shows_form(hass):
         DOMAIN, context={"source": "ssdp"}, data=info)
     assert r["type"] == data_entry_flow.FlowResultType.FORM
     assert r["step_id"] == "user"
+
+
+async def test_reauth_flow_success(hass):
+    entry = MockConfigEntry(
+        domain=DOMAIN, title="Xbox (10.0.0.5)",
+        data={CONF_HOST: "10.0.0.5", CONF_PORT: 11443, CONF_USERNAME: "old_user", CONF_PASSWORD: "old_pass"},
+        unique_id="10.0.0.5:11443")
+    entry.add_to_hass(hass)
+
+    with _patch_client():
+        r = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": "reauth", "entry_id": entry.entry_id})
+        r2 = await hass.config_entries.flow.async_configure(r["flow_id"], {
+            "username": "new_user", "password": "new_pass"})
+
+    assert r2["type"] == data_entry_flow.FlowResultType.ABORT
+    assert r2["reason"] == "reauth_successful"
+    assert entry.data[CONF_USERNAME] == "new_user"
+    assert entry.data[CONF_PASSWORD] == "new_pass"

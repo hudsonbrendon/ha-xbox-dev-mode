@@ -52,11 +52,32 @@ class XboxDevModeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return await self.async_step_user()
 
     async def async_step_dhcp(self, discovery_info):
+        await self.async_set_unique_id(f"{discovery_info.ip}:{DEFAULT_PORT}", raise_on_progress=False)
+        self._abort_if_unique_id_configured()
         self._discovered = {"suggest": {CONF_HOST: discovery_info.ip}}
         return await self.async_step_user()
 
-    async def async_step_reauth(self, entry_data):
-        return await self.async_step_user()
+    async def async_step_reauth(self, user_input=None):
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(self, user_input=None):
+        entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
+        errors = {}
+        if user_input is not None:
+            creds = {CONF_HOST: entry.data[CONF_HOST], CONF_PORT: entry.data[CONF_PORT],
+                     CONF_USERNAME: user_input[CONF_USERNAME], CONF_PASSWORD: user_input[CONF_PASSWORD]}
+            try:
+                await self._validate(creds)
+            except AuthError:
+                errors["base"] = "invalid_auth"
+            except DevPortalUnreachable:
+                errors["base"] = "cannot_connect"
+            else:
+                return self.async_update_reload_and_abort(
+                    entry, data_updates={CONF_USERNAME: user_input[CONF_USERNAME],
+                                         CONF_PASSWORD: user_input[CONF_PASSWORD]})
+        schema = vol.Schema({vol.Required(CONF_USERNAME): str, vol.Required(CONF_PASSWORD): str})
+        return self.async_show_form(step_id="reauth_confirm", data_schema=schema, errors=errors)
 
     @staticmethod
     def async_get_options_flow(entry):

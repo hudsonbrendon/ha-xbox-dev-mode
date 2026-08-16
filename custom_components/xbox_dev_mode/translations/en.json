@@ -11,17 +11,13 @@
           "password": "Password"
         }
       },
-      "ssdp": {
-        "title": "Xbox Device Portal",
-        "description": "Discovered Xbox device found. Enter your credentials."
-      },
-      "dhcp": {
-        "title": "Xbox Device Portal",
-        "description": "Configure Xbox device portal credentials"
-      },
-      "reauth": {
-        "title": "Re-authenticate",
-        "description": "Enter your updated Xbox device portal credentials"
+      "reauth_confirm": {
+        "title": "Re-authenticate Xbox Device Portal",
+        "description": "Update your Xbox device portal credentials",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
       }
     },
     "error": {

@@ -11,17 +11,13 @@
           "password": "Senha"
         }
       },
-      "ssdp": {
-        "title": "Xbox Device Portal",
-        "description": "Xbox descoberto. Digite suas credenciais."
-      },
-      "dhcp": {
-        "title": "Xbox Device Portal",
-        "description": "Configure as credenciais do Xbox Device Portal"
-      },
-      "reauth": {
-        "title": "Reautenticar",
-        "description": "Digite suas credenciais atualizadas do Xbox Device Portal"
+      "reauth_confirm": {
+        "title": "Reautenticar Xbox Device Portal",
+        "description": "Atualize suas credenciais do Xbox Device Portal",
+        "data": {
+          "username": "Usuário",
+          "password": "Senha"
+        }
       }
     },
     "error": {
