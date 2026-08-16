@@ -14,11 +14,10 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 def _instant_request_refresh():
     """Make the coordinator's background refresh fire immediately in tests.
 
-    Setup now calls ``coordinator.async_request_refresh()`` (non-blocking) so
-    HA finishes setup even when the device is unreachable.  That request is
-    debounced with a 10s cooldown, which never elapses inside
-    ``async_block_till_done``. Dropping the cooldown to 0 lets the first
-    refresh complete during setup so entity-state assertions stay
+    Setup now calls ``coordinator.async_config_entry_first_refresh()`` (blocking) so
+    the first refresh completes during setup.  That call respects the
+    REQUEST_REFRESH_DEFAULT_COOLDOWN debounce. Dropping the cooldown to 0 lets the
+    first refresh complete during setup so entity-state assertions stay
     deterministic.
     """
     with patch(

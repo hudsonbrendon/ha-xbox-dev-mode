@@ -1,10 +1,12 @@
 """Xbox Dev Mode integration for Home Assistant."""
+from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import (
     CONF_SCAN_INTERVAL,
     CONF_SCREENSHOT_INTERVAL,
     CONF_SETTINGS_INTERVAL,
+    DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_SCREENSHOT_INTERVAL,
     DEFAULT_SETTINGS_INTERVAL,
@@ -22,7 +24,10 @@ async def async_setup_entry(hass, entry) -> bool:
     platform integrations.
     """
     # Retrieve configuration
-    host = entry.data["host"]
+    host = entry.data[CONF_HOST]
+    username = entry.data[CONF_USERNAME]
+    password = entry.data[CONF_PASSWORD]
+    port = entry.data.get(CONF_PORT, DEFAULT_PORT)
 
     # Retrieve or use default intervals
     options = entry.options
@@ -32,7 +37,7 @@ async def async_setup_entry(hass, entry) -> bool:
 
     # Create shared aiohttp session for the client
     session = async_get_clientsession(hass)
-    client = XboxDevPortal(host, session=session)
+    client = XboxDevPortal(host, username, password, port=port, session=session)
 
     # Create and register coordinator
     coordinator = XboxDevModeCoordinator(

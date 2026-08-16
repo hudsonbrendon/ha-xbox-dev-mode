@@ -77,7 +77,7 @@ class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
         """
         if not interval:
             return False
-        every = max(1, interval // (self.update_interval.seconds or 30))
+        every = max(1, interval // (self.update_interval.total_seconds() or 30))
         return self._tick % every == 0
 
     async def _async_update_data(self) -> XboxData:
