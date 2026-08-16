@@ -70,6 +70,15 @@
       "allow_4k": { "name": "Allow 4K" },
       "allow_vrr": { "name": "Allow VRR" },
       "allow_allm": { "name": "Allow ALLM" }
+    },
+    "button": {
+      "launch_app": { "name": "Launch App" },
+      "terminate_foreground": { "name": "Terminate Foreground" },
+      "restart": { "name": "Restart" },
+      "shutdown": { "name": "Shutdown" }
+    },
+    "image": {
+      "screen": { "name": "Screen" }
     }
   }
 }

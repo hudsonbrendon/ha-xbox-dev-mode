@@ -1,0 +1,108 @@
+"""Image platform for Xbox Dev Mode integration."""
+from datetime import datetime
+
+from homeassistant.components.image import ImageEntity
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+from .coordinator import XboxDevModeCoordinator
+from .entity import XboxEntity
+
+
+class XboxScreenImage(XboxEntity, ImageEntity):
+    """Representation of Xbox screen screenshot image."""
+
+    _attr_translation_key = "screen"
+    _last_screenshot: bytes | None = None
+    _last_update_time: datetime | None = None
+
+    def __init__(
+        self,
+        coordinator: XboxDevModeCoordinator,
+        entry_id: str,
+        entry_unique_id: str,
+    ):
+        """Initialize Xbox screen image.
+
+        Args:
+            coordinator: The coordinator for this entity.
+            entry_id: The config entry ID.
+            entry_unique_id: The config entry's unique ID.
+        """
+        XboxEntity.__init__(self, coordinator, entry_id, entry_unique_id)
+        self._attr_unique_id = f"{entry_id}_screen"
+        # Initialize access_tokens as required by ImageEntity.state_attributes
+        self.access_tokens: list[str] = []
+
+    @property
+    def available(self) -> bool:
+        """Return if entity is available.
+
+        Image is available only if:
+        1. Base availability is true (coordinator.available and dev_mode)
+        2. Screenshot has been fetched and is not None
+        """
+        base_available = XboxEntity.available.fget(self)
+        if not base_available:
+            return False
+
+        # Screenshot must be available and not None
+        if self.coordinator.data.screenshot is None:
+            return False
+
+        return True
+
+    @property
+    def entity_picture(self) -> str | None:
+        """Return the entity picture URL.
+
+        Override ImageEntity.entity_picture to handle empty access_tokens.
+        """
+        # If no access tokens, return None to avoid IndexError
+        if not self.access_tokens:
+            return None
+        # Otherwise use parent implementation
+        return super().entity_picture
+
+    @property
+    def state_attributes(self) -> dict[str, any] | None:
+        """Return the state attributes.
+
+        Override ImageEntity.state_attributes to handle empty access_tokens.
+        """
+        # If no access tokens, return None to avoid IndexError
+        if not self.access_tokens:
+            return None
+        # Otherwise use parent implementation
+        return super().state_attributes
+
+    @property
+    def image_last_updated(self) -> datetime | None:
+        """Return the last update of the image."""
+        return self._last_update_time
+
+    async def async_image(self) -> bytes | None:
+        """Return bytes of image."""
+        current_screenshot = self.coordinator.data.screenshot
+
+        # Only update timestamp if screenshot data changed
+        if current_screenshot and current_screenshot != self._last_screenshot:
+            self._last_screenshot = current_screenshot
+            self._last_update_time = datetime.now()
+
+        return current_screenshot
+
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up image entities for Xbox Dev Mode."""
+    coordinator = entry.runtime_data
+
+    entities = [
+        XboxScreenImage(coordinator, entry.entry_id, entry.unique_id),
+    ]
+
+    async_add_entities(entities)

@@ -19,4 +19,4 @@ DEFAULT_SCREENSHOT_INTERVAL = 60
 DEFAULT_SETTINGS_INTERVAL = 120
 
 # Platforms (populated incrementally in B4-B6)
-PLATFORMS = ["binary_sensor", "sensor", "select", "switch"]
+PLATFORMS = ["binary_sensor", "sensor", "select", "switch", "button", "image"]

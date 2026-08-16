@@ -70,6 +70,15 @@
       "allow_4k": { "name": "Permitir 4K" },
       "allow_vrr": { "name": "Permitir VRR" },
       "allow_allm": { "name": "Permitir ALLM" }
+    },
+    "button": {
+      "launch_app": { "name": "Iniciar Aplicativo" },
+      "terminate_foreground": { "name": "Encerrar em Primeiro Plano" },
+      "restart": { "name": "Reiniciar" },
+      "shutdown": { "name": "Desligar" }
+    },
+    "image": {
+      "screen": { "name": "Tela" }
     }
   }
 }

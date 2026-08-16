@@ -153,6 +153,49 @@ async def setup_integration(hass, mock_devportal):
 
 
 @pytest.fixture
+async def setup_integration_with_shot(hass, mock_devportal):
+    """Set up integration with console in dev_mode and screenshot enabled.
+
+    Console responds to ping, Device Portal is reachable, and screenshot
+    interval is > 0 so screenshot entity is available.
+    """
+    from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+    from custom_components.xbox_dev_mode.const import (
+        DOMAIN,
+        DEFAULT_PORT,
+        CONF_SCAN_INTERVAL,
+        CONF_SCREENSHOT_INTERVAL,
+        CONF_SETTINGS_INTERVAL,
+    )
+
+    # Create config entry with non-zero screenshot interval
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Xbox (10.0.0.5)",
+        data={
+            CONF_HOST: "10.0.0.5",
+            CONF_USERNAME: "developer",
+            CONF_PASSWORD: "devpass",
+            CONF_PORT: DEFAULT_PORT,
+        },
+        options={
+            CONF_SCAN_INTERVAL: 30,
+            CONF_SCREENSHOT_INTERVAL: 10,  # Short interval to ensure it runs on first cycle
+            CONF_SETTINGS_INTERVAL: 120,
+        },
+        unique_id="uuid:test_shot",
+    )
+    entry.add_to_hass(hass)
+
+    # Use the async_setup_entry async context helper
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    yield hass
+
+
+@pytest.fixture
 async def setup_integration_off(hass, mock_devportal):
     """Set up integration with console powered off.
 
