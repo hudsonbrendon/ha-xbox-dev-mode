@@ -97,6 +97,8 @@ async def test_reauth_flow_success(hass):
         r2 = await hass.config_entries.flow.async_configure(r["flow_id"], {
             "username": "new_user", "password": "new_pass"})
 
+    await hass.async_block_till_done()
+
     assert r2["type"] == data_entry_flow.FlowResultType.ABORT
     assert r2["reason"] == "reauth_successful"
     assert entry.data[CONF_USERNAME] == "new_user"
