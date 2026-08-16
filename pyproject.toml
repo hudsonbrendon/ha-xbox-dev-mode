@@ -1,0 +1,22 @@
+[project]
+name = "xbox-dev-mode-homeassistant"
+version = "0.1.0"
+description = "Home Assistant integration for Xbox in Developer Mode via Windows Device Portal"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "homeassistant",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-homeassistant-custom-component",
+    "aioresponses",
+    "xbox-devportal @ file:///Users/hudsonbrendon/Github/xbox-devportal",
+]
+
+[tool.uv]
+# The integration lives under custom_components/; this project is deps-only.
+package = false
