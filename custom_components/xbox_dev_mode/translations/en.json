@@ -1,0 +1,48 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Xbox Device Portal",
+        "description": "Enter your Xbox device portal credentials",
+        "data": {
+          "host": "Host IP Address",
+          "port": "Port",
+          "username": "Username",
+          "password": "Password"
+        }
+      },
+      "ssdp": {
+        "title": "Xbox Device Portal",
+        "description": "Discovered Xbox device found. Enter your credentials."
+      },
+      "dhcp": {
+        "title": "Xbox Device Portal",
+        "description": "Configure Xbox device portal credentials"
+      },
+      "reauth": {
+        "title": "Re-authenticate",
+        "description": "Enter your updated Xbox device portal credentials"
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid credentials. Please check your username and password. Make sure Dev Mode and Device Portal are enabled on your Xbox.",
+      "cannot_connect": "Cannot connect to the Xbox Device Portal. Make sure the Xbox is on, connected to the network, and Dev Mode with Device Portal is enabled."
+    },
+    "abort": {
+      "already_configured": "This Xbox device is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Xbox Device Portal Options",
+        "description": "Configure scanning and screenshot intervals",
+        "data": {
+          "scan_interval": "Scan Interval (seconds)",
+          "screenshot_interval": "Screenshot Interval (seconds)",
+          "settings_interval": "Settings Interval (seconds)"
+        }
+      }
+    }
+  }
+}
