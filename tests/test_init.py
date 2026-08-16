@@ -81,8 +81,11 @@ async def test_async_setup_entry_uses_configured_port():
         assert call_args[1]["port"] == 8443, f"Expected 8443, got {call_args[1]['port']}"
 
 
-async def test_async_unload_entry():
+async def test_async_unload_entry(hass):
     """Test that async_unload_entry unloads platforms and returns True."""
+    from custom_components.xbox_dev_mode.const import PLATFORMS
+
+    # Create config entry
     entry = MagicMock()
     entry.data = {
         CONF_HOST: "192.168.1.100",
@@ -91,18 +94,17 @@ async def test_async_unload_entry():
         CONF_PORT: 11443,
     }
     entry.options = {}
-    entry.state = ConfigEntryState.LOADED
     entry.entry_id = "test_entry_id"
+    entry.state = ConfigEntryState.LOADED
 
-    hass = AsyncMock()
+    # Mock unload_platforms to succeed
     hass.config_entries.async_unload_platforms = AsyncMock(return_value=True)
 
-    with patch("custom_components.xbox_dev_mode.XboxDevPortal"), patch(
-        "custom_components.xbox_dev_mode.async_get_clientsession"
-    ), patch("custom_components.xbox_dev_mode.XboxDevModeCoordinator"):
-        from custom_components.xbox_dev_mode import async_unload_entry
+    # Import and call the unload function
+    from custom_components.xbox_dev_mode import async_unload_entry
 
-        result = await async_unload_entry(hass, entry)
+    result = await async_unload_entry(hass, entry)
 
-        assert result is True, "async_unload_entry should return True"
-        hass.config_entries.async_unload_platforms.assert_called_once()
+    # Verify unload succeeded and platforms were unloaded with correct args
+    assert result is True, "async_unload_entry should return True"
+    hass.config_entries.async_unload_platforms.assert_called_once_with(entry, PLATFORMS)

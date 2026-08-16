@@ -11,6 +11,40 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 
 
 @pytest.fixture(autouse=True)
+def _mock_async_ping():
+    """Mock async_ping to prevent real ICMP socket creation in tests.
+
+    The coordinator's _async_update_data pings the device, which icmplib
+    tries to do with a real socket. The test framework blocks this. Mock it
+    globally so tests never touch the network.
+    """
+    with patch("custom_components.xbox_dev_mode.coordinator.async_ping") as mock_ping:
+        mock_response = AsyncMock()
+        mock_response.is_alive = True
+        mock_ping.return_value = mock_response
+        yield
+
+
+@pytest.fixture(autouse=True)
+def _mock_xbox_devportal():
+    """Mock XboxDevPortal globally to prevent HTTP requests in tests.
+
+    Default mocks all methods to prevent real network calls. Tests can
+    override individual methods via the mock_devportal fixture.
+    """
+    with patch("xbox_devportal.XboxDevPortal") as mock_portal_class:
+        mock_instance = AsyncMock()
+        mock_instance.info = AsyncMock()
+        mock_instance.system_perf = AsyncMock()
+        mock_instance.foreground_app = AsyncMock()
+        mock_instance.packages = AsyncMock(return_value=[])
+        mock_instance.settings = AsyncMock(return_value={})
+        mock_instance.screenshot = AsyncMock(return_value=b"PNG")
+        mock_portal_class.return_value = mock_instance
+        yield mock_instance
+
+
+@pytest.fixture(autouse=True)
 def _instant_request_refresh():
     """Make the coordinator's background refresh fire immediately in tests.
 
