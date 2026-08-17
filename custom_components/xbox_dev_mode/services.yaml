@@ -1,0 +1,92 @@
+install_package:
+  name: Install package
+  description: Install an app package (.appx file) on Xbox.
+  fields:
+    path:
+      name: Path
+      description: Absolute path to the .appx file within config directory.
+      required: true
+      example: /config/packages/app.appx
+      selector:
+        text:
+
+uninstall_package:
+  name: Uninstall package
+  description: Uninstall an app package from Xbox.
+  fields:
+    package_full_name:
+      name: Package full name
+      description: Full package identifier (e.g., "1e4c_1.19.0.0_x64__1e4c_x!App").
+      required: true
+      example: 1e4c_1.19.0.0_x64__1e4c_x!App
+      selector:
+        text:
+
+launch:
+  name: Launch app
+  description: Launch an app package on Xbox.
+  fields:
+    package_full_name:
+      name: Package full name
+      description: Full package identifier (e.g., "1e4c_1.19.0.0_x64__1e4c_x!App").
+      required: true
+      example: 1e4c_1.19.0.0_x64__1e4c_x!App
+      selector:
+        text:
+
+terminate:
+  name: Terminate app
+  description: Terminate an app package on Xbox.
+  fields:
+    package_full_name:
+      name: Package full name
+      description: Full package identifier (e.g., "1e4c_1.19.0.0_x64__1e4c_x!App").
+      required: true
+      example: 1e4c_1.19.0.0_x64__1e4c_x!App
+      selector:
+        text:
+
+upload_file:
+  name: Upload file
+  description: Upload a file to Xbox app storage.
+  fields:
+    package_full_name:
+      name: Package full name
+      description: Full package identifier (e.g., "1e4c_1.19.0.0_x64__1e4c_x!App").
+      required: true
+      example: 1e4c_1.19.0.0_x64__1e4c_x!App
+      selector:
+        text:
+    subdir:
+      name: Subdirectory
+      description: Subdirectory within app storage (e.g., "documents", "pictures").
+      required: true
+      example: documents
+      selector:
+        text:
+    path:
+      name: Path
+      description: Absolute path to the file to upload, within config directory.
+      required: true
+      example: /config/files/myfile.txt
+      selector:
+        text:
+
+set_setting:
+  name: Set setting
+  description: Change a device setting on Xbox.
+  fields:
+    name:
+      name: Setting name
+      description: Name of the setting (e.g., "TVResolution", "AllowHDR").
+      required: true
+      example: TVResolution
+      selector:
+        text:
+    value:
+      name: Value
+      description: Value to set for the setting (e.g., "2160p", "true").
+      required: true
+      example: 2160p
+      selector:
+        text:

@@ -1,6 +1,9 @@
 """Xbox Dev Mode integration for Home Assistant."""
+import logging
+
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.exceptions import HomeAssistantError
 
 from .const import (
     CONF_SCAN_INTERVAL,
@@ -15,6 +18,8 @@ from .const import (
 )
 from .coordinator import XboxDevModeCoordinator
 from xbox_devportal import XboxDevPortal
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass, entry) -> bool:
@@ -53,6 +58,9 @@ async def async_setup_entry(hass, entry) -> bool:
     # Forward entry setup to platforms
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    # Register service handlers
+    _register_services(hass)
+
     return True
 
 
@@ -63,3 +71,141 @@ async def async_unload_entry(hass, entry) -> bool:
     """
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     return unload_ok
+
+
+def _get_coordinator(hass, device_id: str | None = None):
+    """Get coordinator by device_id or return the only one if unique.
+
+    Args:
+        hass: Home Assistant instance
+        device_id: Optional device ID to specify which entry to use
+
+    Returns:
+        The coordinator
+
+    Raises:
+        HomeAssistantError: If no entry found, multiple entries exist without device_id, etc.
+    """
+    entries = hass.config_entries.async_entries(DOMAIN)
+
+    if not entries:
+        raise HomeAssistantError(f"No {DOMAIN} config entries found")
+
+    if device_id:
+        # Find entry by device_id
+        for entry in entries:
+            coordinator = entry.runtime_data
+            if coordinator and hasattr(coordinator, "_host"):
+                # Match by host (simple device identifier)
+                if coordinator._host == device_id:
+                    return coordinator
+        raise HomeAssistantError(f"No device found with ID {device_id}")
+
+    # If only one entry, use it
+    if len(entries) == 1:
+        return entries[0].runtime_data
+
+    # Multiple entries without device_id
+    raise HomeAssistantError(
+        f"Multiple {DOMAIN} entries exist, specify device_id in service call"
+    )
+
+
+def _register_services(hass):
+    """Register service handlers for Xbox Dev Mode."""
+    async def handle_install_package(call):
+        """Handle install_package service call."""
+        path = call.data.get("path")
+        coordinator = _get_coordinator(hass)
+
+        # Validate path is within config directory
+        if not hass.config.is_allowed_path(path):
+            raise HomeAssistantError(f"Path not allowed: {path}")
+
+        try:
+            await coordinator.client.install_package(path)
+        except Exception as e:
+            _LOGGER.error("Error installing package: %s", e)
+            raise HomeAssistantError(f"Failed to install package: {e}") from e
+
+    async def handle_uninstall_package(call):
+        """Handle uninstall_package service call."""
+        package_full_name = call.data.get("package_full_name")
+        coordinator = _get_coordinator(hass)
+
+        try:
+            await coordinator.client.uninstall_package(package_full_name)
+        except Exception as e:
+            _LOGGER.error("Error uninstalling package: %s", e)
+            raise HomeAssistantError(f"Failed to uninstall package: {e}") from e
+
+    async def handle_launch(call):
+        """Handle launch service call."""
+        package_full_name = call.data.get("package_full_name")
+        coordinator = _get_coordinator(hass)
+
+        try:
+            await coordinator.client.launch(package_full_name)
+        except Exception as e:
+            _LOGGER.error("Error launching app: %s", e)
+            raise HomeAssistantError(f"Failed to launch app: {e}") from e
+
+    async def handle_terminate(call):
+        """Handle terminate service call."""
+        package_full_name = call.data.get("package_full_name")
+        coordinator = _get_coordinator(hass)
+
+        try:
+            await coordinator.client.terminate(package_full_name)
+        except Exception as e:
+            _LOGGER.error("Error terminating app: %s", e)
+            raise HomeAssistantError(f"Failed to terminate app: {e}") from e
+
+    async def handle_upload_file(call):
+        """Handle upload_file service call."""
+        package_full_name = call.data.get("package_full_name")
+        subdir = call.data.get("subdir")
+        path = call.data.get("path")
+        coordinator = _get_coordinator(hass)
+
+        # Validate path is within config directory
+        if not hass.config.is_allowed_path(path):
+            raise HomeAssistantError(f"Path not allowed: {path}")
+
+        try:
+            await coordinator.client.upload_file(package_full_name, subdir, path)
+        except Exception as e:
+            _LOGGER.error("Error uploading file: %s", e)
+            raise HomeAssistantError(f"Failed to upload file: {e}") from e
+
+    async def handle_set_setting(call):
+        """Handle set_setting service call."""
+        name = call.data.get("name")
+        value = call.data.get("value")
+        coordinator = _get_coordinator(hass)
+
+        try:
+            await coordinator.client.set_setting(name, value)
+        except Exception as e:
+            _LOGGER.error("Error setting value: %s", e)
+            raise HomeAssistantError(f"Failed to set setting: {e}") from e
+
+    # Register all services
+    hass.services.async_register(
+        DOMAIN, "install_package", handle_install_package, supports_response=False
+    )
+    hass.services.async_register(
+        DOMAIN, "uninstall_package", handle_uninstall_package, supports_response=False
+    )
+    hass.services.async_register(
+        DOMAIN, "launch", handle_launch, supports_response=False
+    )
+    hass.services.async_register(
+        DOMAIN, "terminate", handle_terminate, supports_response=False
+    )
+    hass.services.async_register(
+        DOMAIN, "upload_file", handle_upload_file, supports_response=False
+    )
+    hass.services.async_register(
+        DOMAIN, "set_setting", handle_set_setting, supports_response=False
+    )
