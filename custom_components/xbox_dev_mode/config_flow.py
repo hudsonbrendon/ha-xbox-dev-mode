@@ -43,6 +43,12 @@ class XboxDevModeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected error validating Xbox Device Portal connection")
                 errors["base"] = "unknown"
             else:
+                # O caminho SSDP identifica pelo UDN do UPnP e o manual por host:port.
+                # Sao esquemas diferentes, entao _abort_if_unique_id_configured() nao
+                # impede o mesmo console de entrar duas vezes — aconteceu numa instalacao
+                # real: uma entry via ssdp e outra via user, ambas carregadas, 26 entidades
+                # duplicadas com sufixo _2. Abortar por host cobre os dois caminhos.
+                self._async_abort_entries_match({CONF_HOST: user_input[CONF_HOST]})
                 await self.async_set_unique_id(
                     self._discovered.get("udn") or f"{user_input[CONF_HOST]}:{user_input[CONF_PORT]}",
                     raise_on_progress=False)

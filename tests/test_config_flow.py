@@ -193,3 +193,33 @@ def test_translation_files_have_console_state_values():
         data = json.loads((COMPONENT_DIR / relpath).read_text())
         states = data["entity"]["sensor"]["console_state"]["state"]
         assert set(states) == {"dev_mode", "retail", "off"}, relpath
+
+
+async def test_user_flow_aborts_when_host_already_configured(hass):
+    """Mesmo console nao pode entrar duas vezes.
+
+    O caminho SSDP usa o UDN do UPnP como unique_id e o manual usa host:port. Como sao
+    esquemas diferentes, `_abort_if_unique_id_configured()` nao pega a duplicata — numa
+    instalacao real isso gerou duas entries carregadas para o mesmo Xbox, com 26
+    entidades duplicadas (sufixo _2). A guarda por host cobre os dois caminhos.
+    """
+    from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    existente = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="uuid:08e2300a-1a55-4464-8689-835078580a45",   # veio do SSDP
+        data={CONF_HOST: "10.0.0.5", CONF_PORT: 11443,
+              CONF_USERNAME: "u", CONF_PASSWORD: "p"},
+    )
+    existente.add_to_hass(hass)
+
+    with _patch_client():
+        r = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
+        r2 = await hass.config_entries.flow.async_configure(r["flow_id"], {
+            CONF_HOST: "10.0.0.5", CONF_PORT: 11443,
+            CONF_USERNAME: "outro", CONF_PASSWORD: "outra"})
+
+    assert r2["type"] == data_entry_flow.FlowResultType.ABORT
+    assert r2["reason"] == "already_configured"
+    assert len(hass.config_entries.async_entries(DOMAIN)) == 1
