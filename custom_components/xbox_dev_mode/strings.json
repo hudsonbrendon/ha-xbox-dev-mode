@@ -1,0 +1,93 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Xbox Device Portal",
+        "description": "Enter your Xbox device portal credentials",
+        "data": {
+          "host": "Host IP Address",
+          "port": "Port",
+          "username": "Username",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate Xbox Device Portal",
+        "description": "Update your Xbox device portal credentials",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid credentials. Please check your username and password. Make sure Dev Mode and Device Portal are enabled on your Xbox.",
+      "cannot_connect": "Cannot connect to the Xbox Device Portal. Make sure the Xbox is on, connected to the network, and Dev Mode with Device Portal is enabled.",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This Xbox device is already configured",
+      "reauth_successful": "Re-authentication was successful"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Xbox Device Portal Options",
+        "description": "Configure scanning and screenshot intervals",
+        "data": {
+          "scan_interval": "Scan Interval (seconds)",
+          "screenshot_interval": "Screenshot Interval (seconds)",
+          "settings_interval": "Settings Interval (seconds)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "console_state": {
+        "name": "Console State",
+        "state": {
+          "dev_mode": "Dev mode",
+          "retail": "Retail",
+          "off": "Off"
+        }
+      },
+      "foreground_app": { "name": "Foreground App" },
+      "cpu_load": { "name": "CPU Load" },
+      "memory_used": { "name": "Memory Used" },
+      "memory_available": { "name": "Memory Available" },
+      "gpu_memory_used": { "name": "GPU Memory Used" },
+      "sideloaded_apps": { "name": "Sideloaded Apps" },
+      "sandbox": { "name": "Sandbox" },
+      "os_version": { "name": "OS Version" }
+    },
+    "binary_sensor": {
+      "dev_mode": { "name": "Dev Mode" }
+    },
+    "select": {
+      "app": { "name": "App" },
+      "tv_resolution": { "name": "TV Resolution" },
+      "power_mode": { "name": "Power Mode" },
+      "hdmi_audio": { "name": "HDMI Audio" },
+      "color_space": { "name": "Color Space" },
+      "headset_format": { "name": "Headset Format" },
+      "default_app": { "name": "Default App" }
+    },
+    "switch": {
+      "allow_hdr": { "name": "Allow HDR" },
+      "allow_4k": { "name": "Allow 4K" },
+      "allow_vrr": { "name": "Allow VRR" },
+      "allow_allm": { "name": "Allow ALLM" }
+    },
+    "button": {
+      "launch_app": { "name": "Launch App" },
+      "terminate_foreground": { "name": "Terminate Foreground" },
+      "restart": { "name": "Restart" },
+      "shutdown": { "name": "Shutdown" }
+    },
+    "image": {
+      "screen": { "name": "Screen" }
+    }
+  }
+}

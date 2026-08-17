@@ -1,0 +1,93 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Xbox Device Portal",
+        "description": "Digite suas credenciais do Xbox Device Portal",
+        "data": {
+          "host": "Endereço IP do Host",
+          "port": "Porta",
+          "username": "Usuário",
+          "password": "Senha"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reautenticar Xbox Device Portal",
+        "description": "Atualize suas credenciais do Xbox Device Portal",
+        "data": {
+          "username": "Usuário",
+          "password": "Senha"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Credenciais inválidas. Verifique seu usuário e senha. Certifique-se de que o Modo Desenvolvedor e o Device Portal estão ativados no seu Xbox.",
+      "cannot_connect": "Não é possível conectar ao Xbox Device Portal. Certifique-se de que o Xbox está ligado, conectado à rede e que o Modo Desenvolvedor com Device Portal está ativado.",
+      "unknown": "Erro inesperado"
+    },
+    "abort": {
+      "already_configured": "Este dispositivo Xbox já está configurado",
+      "reauth_successful": "Reautenticação concluída com sucesso"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opções do Xbox Device Portal",
+        "description": "Configure os intervalos de varredura e captura de tela",
+        "data": {
+          "scan_interval": "Intervalo de Varredura (segundos)",
+          "screenshot_interval": "Intervalo de Captura de Tela (segundos)",
+          "settings_interval": "Intervalo de Configurações (segundos)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "console_state": {
+        "name": "Estado do Console",
+        "state": {
+          "dev_mode": "Modo desenvolvedor",
+          "retail": "Retail",
+          "off": "Desligado"
+        }
+      },
+      "foreground_app": { "name": "Aplicativo em Primeiro Plano" },
+      "cpu_load": { "name": "Uso de CPU" },
+      "memory_used": { "name": "Memória Usada" },
+      "memory_available": { "name": "Memória Disponível" },
+      "gpu_memory_used": { "name": "Memória de GPU Usada" },
+      "sideloaded_apps": { "name": "Aplicativos Sideloaded" },
+      "sandbox": { "name": "Sandbox" },
+      "os_version": { "name": "Versão do OS" }
+    },
+    "binary_sensor": {
+      "dev_mode": { "name": "Modo Desenvolvedor" }
+    },
+    "select": {
+      "app": { "name": "Aplicativo" },
+      "tv_resolution": { "name": "Resolução da TV" },
+      "power_mode": { "name": "Modo de Energia" },
+      "hdmi_audio": { "name": "Áudio HDMI" },
+      "color_space": { "name": "Espaço de Cores" },
+      "headset_format": { "name": "Formato de Headset" },
+      "default_app": { "name": "Aplicativo Padrão" }
+    },
+    "switch": {
+      "allow_hdr": { "name": "Permitir HDR" },
+      "allow_4k": { "name": "Permitir 4K" },
+      "allow_vrr": { "name": "Permitir VRR" },
+      "allow_allm": { "name": "Permitir ALLM" }
+    },
+    "button": {
+      "launch_app": { "name": "Iniciar Aplicativo" },
+      "terminate_foreground": { "name": "Encerrar em Primeiro Plano" },
+      "restart": { "name": "Reiniciar" },
+      "shutdown": { "name": "Desligar" }
+    },
+    "image": {
+      "screen": { "name": "Tela" }
+    }
+  }
+}
