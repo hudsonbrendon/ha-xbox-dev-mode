@@ -27,8 +27,17 @@ async def _run(hass, client, alive):
 
 
 async def test_state_off_when_no_ping(hass):
-    """When device does not respond to ping, state is off."""
-    data = await _run(hass, AsyncMock(), alive=False)
+    """Console desligado: portal inacessivel E sem resposta a ping.
+
+    Um `AsyncMock()` cru responderia `info()` normalmente, e o coordinator — que agora
+    consulta o portal antes do ping — concluiria dev_mode. Desligado de verdade exige
+    as duas evidencias.
+    """
+    from xbox_devportal import DevPortalUnreachable
+
+    client = AsyncMock()
+    client.info.side_effect = DevPortalUnreachable("console desligado")
+    data = await _run(hass, client, alive=False)
     assert data.state == STATE_OFF
 
 
@@ -78,3 +87,48 @@ async def test_sandbox_cached_across_cadence_cycles(hass):
 
     # Only fetched once (tick 0), reused on the three following cycles.
     assert client.sandbox.await_count == 1
+
+
+async def test_dev_mode_mesmo_com_icmp_indisponivel(hass):
+    """Portal respondendo vence ICMP quebrado.
+
+    Caso real: numa instalacao de verdade o ICMP nao estava disponivel para o processo do
+    Home Assistant, o ping devolvia is_alive=False, e a versao antiga — que pingava
+    primeiro e desistia — reportava OFF com todas as entidades unavailable, enquanto o
+    Device Portal respondia normalmente de outra maquina.
+    """
+    client = AsyncMock()
+    client.info.return_value = object()
+    client.system_perf.return_value = object()
+    client.foreground_app.return_value = None
+    client.packages.return_value = []
+    with _ping(False):                      # ICMP diz que esta morto
+        coord = XboxDevModeCoordinator(hass, client, "10.0.0.5", scan=30, shot=0, settings_iv=120)
+        data = await coord._async_update_data()
+    assert data.state == STATE_DEV           # o portal manda
+
+
+async def test_retail_quando_icmp_estoura(hass):
+    """Se o proprio ping levanta excecao, assume RETAIL em vez de afirmar OFF."""
+    from unittest.mock import patch
+    from xbox_devportal import DevPortalUnreachable
+
+    client = AsyncMock()
+    client.info.side_effect = DevPortalUnreachable("sem portal")
+    with patch("custom_components.xbox_dev_mode.coordinator.async_ping",
+               AsyncMock(side_effect=PermissionError("sem CAP_NET_RAW"))):
+        coord = XboxDevModeCoordinator(hass, client, "10.0.0.5", scan=30, shot=0, settings_iv=120)
+        data = await coord._async_update_data()
+    assert data.state == STATE_RETAIL
+
+
+async def test_portal_nao_e_consultado_para_decidir_off(hass):
+    """Sem portal e sem ping = OFF (comportamento preservado)."""
+    from xbox_devportal import DevPortalUnreachable
+
+    client = AsyncMock()
+    client.info.side_effect = DevPortalUnreachable("sem portal")
+    with _ping(False):
+        coord = XboxDevModeCoordinator(hass, client, "10.0.0.5", scan=30, shot=0, settings_iv=120)
+        data = await coord._async_update_data()
+    assert data.state == STATE_OFF

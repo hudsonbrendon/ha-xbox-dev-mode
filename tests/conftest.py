@@ -207,11 +207,16 @@ async def setup_integration_with_shot(hass, mock_devportal):
 async def setup_integration_off(hass, mock_devportal):
     """Set up integration with console powered off.
 
-    Console does not respond to ping.
+    Console desligado significa duas coisas ao mesmo tempo: o Device Portal nao responde
+    E o host nao responde a ping. Matar so o ping nao basta — desde que o coordinator
+    passou a consultar o portal primeiro (para nao reportar OFF quando o ICMP esta
+    indisponivel no host do Home Assistant), um cliente mockado que ainda responde
+    `info()` resulta em dev_mode, nao em off.
     """
     from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
     from pytest_homeassistant_custom_component.common import MockConfigEntry
     from custom_components.xbox_dev_mode.const import DOMAIN, DEFAULT_PORT
+    from xbox_devportal import DevPortalUnreachable
 
     # Override the autouse ping fixture to return not alive
     mock_ping_patcher = patch("custom_components.xbox_dev_mode.coordinator.async_ping")
@@ -219,6 +224,7 @@ async def setup_integration_off(hass, mock_devportal):
         mock_response = AsyncMock()
         mock_response.is_alive = False
         mock_ping.return_value = mock_response
+        _mock_devportal_instance.info.side_effect = DevPortalUnreachable("console desligado")
 
         # Create config entry
         entry = MockConfigEntry(

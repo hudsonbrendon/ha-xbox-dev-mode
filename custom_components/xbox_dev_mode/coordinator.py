@@ -86,10 +86,16 @@ class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
     async def _async_update_data(self) -> XboxData:
         """Fetch device state and telemetry.
 
-        Implements tri-state detection:
-        1. Ping the device; if no response, return STATE_OFF
-        2. Call info() to check Device Portal; if DevPortalUnreachable, return STATE_RETAIL
-        3. If info() succeeds, return STATE_DEV with full telemetry
+        Tri-state detection, portal first:
+        1. Call info(). If it answers, the console is in Dev Mode — done.
+        2. Only if the portal fails, ping to tell RETAIL (host up) from OFF (host down).
+
+        The portal is checked first on purpose. Pinging first and short-circuiting on
+        `is_alive == False` made the whole integration report OFF whenever ICMP was
+        unavailable to the Home Assistant process — which is exactly what happened on a
+        real install: the portal answered 401 from another machine while every entity sat
+        unavailable. ICMP is a permission-sensitive side channel; the portal answering is
+        the authoritative signal, so it goes first.
 
         Raises:
             ConfigEntryAuthFailed: If AuthError is raised by the client.
@@ -97,20 +103,20 @@ class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
         Returns:
             XboxData with current state and telemetry.
         """
-        # Step 1: Ping device
-        ping = await async_ping(
-            self._host, count=1, timeout=1, privileged=False
-        )
-        if not ping.is_alive:
-            return XboxData(state=STATE_OFF)
-
-        # Step 2: Try Device Portal connection
         try:
             info = await self.client.info()
         except AuthError as e:
             raise ConfigEntryAuthFailed from e
         except DevPortalUnreachable:
-            return XboxData(state=STATE_RETAIL)
+            # Sem portal: pode ser Retail (ligado) ou desligado. O ping decide — e se o
+            # proprio ping falhar por falta de permissao, assume RETAIL, porque afirmar
+            # "desligado" sem evidencia e pior que admitir incerteza.
+            try:
+                ping = await async_ping(self._host, count=1, timeout=1, privileged=False)
+            except Exception:
+                _LOGGER.debug("ICMP indisponivel; sem distinguir retail de desligado")
+                return XboxData(state=STATE_RETAIL)
+            return XboxData(state=STATE_RETAIL if ping.is_alive else STATE_OFF)
 
         # Step 3: Device Portal is responsive; fetch full telemetry
         perf = await self.client.system_perf()
