@@ -10,16 +10,12 @@ from pathlib import Path
 
 BRAND_DIR = Path(__file__).parent.parent / "custom_components" / "xbox_dev_mode" / "brand"
 
-ESPERADOS = {
-    "icon.png": 256,
-    "icon@2x.png": 512,
-    "dark_icon.png": 256,
-    "dark_icon@2x.png": 512,
-    "logo.png": 256,
-    "logo@2x.png": 512,
-    "dark_logo.png": 256,
-    "dark_logo@2x.png": 512,
-}
+# Icone e quadrado (avatar); logo e faixa horizontal. A altura e o que o HA usa para
+# escalar, entao e o que vale checar — nao a largura, que varia com o desenho.
+ICONES = ("icon.png", "dark_icon.png", "icon@2x.png", "dark_icon@2x.png")
+LOGOS = ("logo.png", "dark_logo.png", "logo@2x.png", "dark_logo@2x.png")
+ALTURA = {"icon.png": 256, "dark_icon.png": 256, "icon@2x.png": 512, "dark_icon@2x.png": 512,
+          "logo.png": 256, "dark_logo.png": 256, "logo@2x.png": 512, "dark_logo@2x.png": 512}
 
 
 def _dimensoes_png(caminho: Path) -> tuple[int, int]:
@@ -34,13 +30,22 @@ def test_brand_dir_existe():
     assert BRAND_DIR.is_dir(), "falta custom_components/xbox_dev_mode/brand/"
 
 
-def test_todas_as_imagens_existem_com_tamanho_correto():
-    for nome, lado in ESPERADOS.items():
+def test_todas_as_imagens_existem_com_altura_correta():
+    for nome, altura_esperada in ALTURA.items():
         arquivo = BRAND_DIR / nome
         assert arquivo.is_file(), f"falta {nome}"
-        assert _dimensoes_png(arquivo) == (lado, lado), f"{nome} deveria ser {lado}x{lado}"
+        _, altura = _dimensoes_png(arquivo)
+        assert altura == altura_esperada, f"{nome} deveria ter {altura_esperada}px de altura"
 
 
-def test_variantes_dark_sao_diferentes_das_claras():
-    """Se dark_icon for copia de icon, o tema escuro fica sem contraste."""
-    assert (BRAND_DIR / "icon.png").read_bytes() != (BRAND_DIR / "dark_icon.png").read_bytes()
+def test_icones_sao_quadrados():
+    """O icone e usado como avatar; retangular deforma no card da integracao."""
+    for nome in ICONES:
+        largura, altura = _dimensoes_png(BRAND_DIR / nome)
+        assert largura == altura, f"{nome} deveria ser quadrado, e {largura}x{altura}"
+
+
+def test_logos_sao_faixas_horizontais():
+    for nome in LOGOS:
+        largura, altura = _dimensoes_png(BRAND_DIR / nome)
+        assert largura > altura, f"{nome} deveria ser horizontal, e {largura}x{altura}"
