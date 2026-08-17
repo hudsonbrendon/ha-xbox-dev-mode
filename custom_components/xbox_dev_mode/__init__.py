@@ -1,6 +1,7 @@
 """Xbox Dev Mode integration for Home Assistant."""
 import logging
 
+from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.exceptions import HomeAssistantError
@@ -20,6 +21,18 @@ from .coordinator import XboxDevModeCoordinator
 from xbox_devportal import XboxDevPortal
 
 _LOGGER = logging.getLogger(__name__)
+
+# Services are registered once per hass instance (not per config entry) and
+# removed once the last config entry is unloaded. Keep this list in sync with
+# the hass.services.async_register(...) calls in _register_services().
+_SERVICES = (
+    "install_package",
+    "uninstall_package",
+    "launch",
+    "terminate",
+    "upload_file",
+    "set_setting",
+)
 
 
 async def async_setup_entry(hass, entry) -> bool:
@@ -58,8 +71,10 @@ async def async_setup_entry(hass, entry) -> bool:
     # Forward entry setup to platforms
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    # Register service handlers
-    _register_services(hass)
+    # Register service handlers once per hass instance. Multiple config
+    # entries (multiple consoles) share the same services.
+    if not hass.services.has_service(DOMAIN, _SERVICES[0]):
+        _register_services(hass)
 
     return True
 
@@ -67,9 +82,23 @@ async def async_setup_entry(hass, entry) -> bool:
 async def async_unload_entry(hass, entry) -> bool:
     """Unload a config entry.
 
-    Unloads all platforms and cleans up.
+    Unloads all platforms, clears the stale coordinator reference, and (once
+    no other config entry for this integration is still loaded) removes the
+    services so a stray service call can't reach a torn-down coordinator.
     """
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unload_ok:
+        entry.runtime_data = None
+
+        other_loaded = [
+            e
+            for e in hass.config_entries.async_entries(DOMAIN)
+            if e.entry_id != entry.entry_id and e.state is ConfigEntryState.LOADED
+        ]
+        if not other_loaded:
+            for service in _SERVICES:
+                hass.services.async_remove(DOMAIN, service)
+
     return unload_ok
 
 
@@ -103,7 +132,12 @@ def _get_coordinator(hass, device_id: str | None = None):
 
     # If only one entry, use it
     if len(entries) == 1:
-        return entries[0].runtime_data
+        coordinator = entries[0].runtime_data
+        if coordinator is None:
+            raise HomeAssistantError(
+                f"The {DOMAIN} integration is not loaded; reload it and try again"
+            )
+        return coordinator
 
     # Multiple entries without device_id
     raise HomeAssistantError(

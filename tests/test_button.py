@@ -1,4 +1,15 @@
 """Test button platform for Xbox Dev Mode integration."""
+from custom_components.xbox_dev_mode.button import BUTTONS
+
+
+def test_shutdown_button_has_no_device_class():
+    """Only the restart button is an actual "restart" device_class; shutdown
+    previously reused it too, which is misleading in the UI.
+    """
+    shutdown = next(b for b in BUTTONS if b.key == "shutdown")
+    restart = next(b for b in BUTTONS if b.key == "restart")
+    assert shutdown.device_class is None
+    assert restart.device_class == "restart"
 
 
 async def test_launch_button_launches(hass, setup_integration, mock_devportal):

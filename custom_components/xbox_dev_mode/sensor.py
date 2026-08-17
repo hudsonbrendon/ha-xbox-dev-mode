@@ -34,7 +34,7 @@ SENSORS: list[XboxSensorDescription] = [
     XboxSensorDescription(
         key="foreground_app",
         translation_key="foreground_app",
-        value_fn=lambda data: data.foreground.image_name if data.foreground else "Nenhum",
+        value_fn=lambda data: data.foreground.image_name if data.foreground else None,
         dev_only=True,
     ),
     XboxSensorDescription(

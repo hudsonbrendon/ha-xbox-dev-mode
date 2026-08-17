@@ -1,4 +1,25 @@
 """Test image platform for Xbox Dev Mode integration."""
+from unittest.mock import MagicMock
+
+from custom_components.xbox_dev_mode.const import STATE_DEV
+from custom_components.xbox_dev_mode.coordinator import XboxData
+from custom_components.xbox_dev_mode.image import XboxScreenImage
+
+
+async def test_image_last_updated_is_timezone_aware(hass):
+    """async_image() must stamp _last_update_time with dt_util.utcnow()
+    (timezone-aware), not the naive datetime.now(), or HA's history/recorder
+    can misorder it against other aware timestamps.
+    """
+    coordinator = MagicMock()
+    coordinator.hass = hass
+    coordinator.data = XboxData(state=STATE_DEV, screenshot=b"PNG")
+
+    entity = XboxScreenImage(coordinator, "entry1", "unique1")
+    await entity.async_image()
+
+    assert entity.image_last_updated is not None
+    assert entity.image_last_updated.tzinfo is not None
 
 
 async def test_image_with_screenshot_enabled(hass, setup_integration_with_shot, mock_devportal):

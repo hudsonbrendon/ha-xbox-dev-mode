@@ -49,3 +49,32 @@ async def test_state_dev_when_portal_answers(hass):
     client.packages.return_value = []
     data = await _run(hass, client, alive=True)
     assert data.state == STATE_DEV
+
+
+async def test_sandbox_cached_across_cadence_cycles(hass):
+    """Sandbox must not flicker to unknown between settings-cadence ticks.
+
+    Regression test: with scan=30s and settings_iv=120s, sandbox is only
+    fetched every 4th cycle. Before the fix, the ``sandbox`` local was reset
+    to None every cycle regardless of cadence, so the sensor showed a value
+    once and then "unknown" for the next three cycles. It must now be cached
+    like ``_last_settings``/``_last_shot``.
+    """
+    client = AsyncMock()
+    client.info.return_value = object()
+    client.system_perf.return_value = object()
+    client.foreground_app.return_value = None
+    client.packages.return_value = []
+    client.settings.return_value = {}
+    client.sandbox.return_value = "XDKS.1"
+
+    with _ping(True):
+        coord = XboxDevModeCoordinator(
+            hass, client, "10.0.0.5", scan=30, shot=0, settings_iv=120
+        )
+        for _ in range(4):
+            data = await coord._async_update_data()
+            assert data.sandbox == "XDKS.1"
+
+    # Only fetched once (tick 0), reused on the three following cycles.
+    assert client.sandbox.await_count == 1

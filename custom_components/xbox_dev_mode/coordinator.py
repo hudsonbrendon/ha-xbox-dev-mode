@@ -66,6 +66,7 @@ class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
         self._tick = 0
         self._last_settings: dict = {}
         self._last_shot: bytes | None = None
+        self._last_sandbox: str | None = None
         self.selected_app: str | None = None
 
     def _due(self, interval: int) -> bool:
@@ -128,10 +129,11 @@ class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
         if self._due(self._shot_iv):
             self._last_shot = await self.client.screenshot()
 
-        # Fetch sandbox mode on settings cadence (rarely changes)
-        sandbox = None
+        # Fetch sandbox mode on settings cadence (rarely changes). Cached like
+        # settings/screenshot so the sensor doesn't flicker to unknown between
+        # cadence ticks (it used to be reset to None every cycle).
         if self._due(self._settings_iv):
-            sandbox = await self.client.sandbox()
+            self._last_sandbox = await self.client.sandbox()
 
         # Advance cadence tick only after a successful dev-mode cycle, and
         # after the _due() checks above (so tick 0 = first cycle = due).
@@ -145,5 +147,5 @@ class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
             sideloaded=side,
             settings=self._last_settings,
             screenshot=self._last_shot,
-            sandbox=sandbox,
+            sandbox=self._last_sandbox,
         )

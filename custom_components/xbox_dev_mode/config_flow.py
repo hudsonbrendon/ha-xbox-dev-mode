@@ -1,3 +1,4 @@
+import logging
 from urllib.parse import urlparse
 import voluptuous as vol
 from homeassistant import config_entries
@@ -5,7 +6,10 @@ from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_PORT, CONF_USERNA
 from xbox_devportal import XboxDevPortal, AuthError, DevPortalUnreachable
 from .const import (DOMAIN, DEFAULT_PORT, CONF_SCAN_INTERVAL, CONF_SCREENSHOT_INTERVAL,
                     CONF_SETTINGS_INTERVAL, DEFAULT_SCAN_INTERVAL,
-                    DEFAULT_SCREENSHOT_INTERVAL, DEFAULT_SETTINGS_INTERVAL)
+                    DEFAULT_SCREENSHOT_INTERVAL, DEFAULT_SETTINGS_INTERVAL,
+                    MIN_SCAN_INTERVAL, MIN_SETTINGS_INTERVAL)
+
+_LOGGER = logging.getLogger(__name__)
 
 _SCHEMA = vol.Schema({
     vol.Required(CONF_HOST): str, vol.Required(CONF_PORT, default=DEFAULT_PORT): int,
@@ -35,6 +39,9 @@ class XboxDevModeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "invalid_auth"
             except DevPortalUnreachable:
                 errors["base"] = "cannot_connect"
+            except Exception:
+                _LOGGER.exception("Unexpected error validating Xbox Device Portal connection")
+                errors["base"] = "unknown"
             else:
                 await self.async_set_unique_id(
                     self._discovered.get("udn") or f"{user_input[CONF_HOST]}:{user_input[CONF_PORT]}",
@@ -72,6 +79,9 @@ class XboxDevModeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "invalid_auth"
             except DevPortalUnreachable:
                 errors["base"] = "cannot_connect"
+            except Exception:
+                _LOGGER.exception("Unexpected error validating Xbox Device Portal connection")
+                errors["base"] = "unknown"
             else:
                 return self.async_update_reload_and_abort(
                     entry, data_updates={CONF_USERNAME: user_input[CONF_USERNAME],
@@ -93,7 +103,11 @@ class XboxDevModeOptionsFlow(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
         o = self._entry.options
         schema = vol.Schema({
-            vol.Optional(CONF_SCAN_INTERVAL, default=o.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)): int,
-            vol.Optional(CONF_SCREENSHOT_INTERVAL, default=o.get(CONF_SCREENSHOT_INTERVAL, DEFAULT_SCREENSHOT_INTERVAL)): int,
-            vol.Optional(CONF_SETTINGS_INTERVAL, default=o.get(CONF_SETTINGS_INTERVAL, DEFAULT_SETTINGS_INTERVAL)): int})
+            vol.Optional(CONF_SCAN_INTERVAL, default=o.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)):
+                vol.All(int, vol.Range(min=MIN_SCAN_INTERVAL)),
+            # 0 is intentionally allowed here: it means "screenshots off".
+            vol.Optional(CONF_SCREENSHOT_INTERVAL, default=o.get(CONF_SCREENSHOT_INTERVAL, DEFAULT_SCREENSHOT_INTERVAL)):
+                vol.All(int, vol.Range(min=0)),
+            vol.Optional(CONF_SETTINGS_INTERVAL, default=o.get(CONF_SETTINGS_INTERVAL, DEFAULT_SETTINGS_INTERVAL)):
+                vol.All(int, vol.Range(min=MIN_SETTINGS_INTERVAL))})
         return self.async_show_form(step_id="init", data_schema=schema)

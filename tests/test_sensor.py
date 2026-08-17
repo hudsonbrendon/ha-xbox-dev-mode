@@ -34,6 +34,15 @@ async def test_sandbox_sensor_available_when_off(hass, setup_integration_off):
     assert state.state == "unknown"
 
 
+def test_foreground_app_fallback_is_none():
+    """The sensor's default language is English; the "no foreground app"
+    fallback must be None (-> unknown state), not a hardcoded PT-BR string.
+    """
+    foreground = next(s for s in SENSORS if s.key == "foreground_app")
+    data = XboxData(state=STATE_DEV, foreground=None)
+    assert foreground.value_fn(data) is None
+
+
 def test_memory_used_matches_lib_memory_used_mb():
     """memory_used must use SystemPerf.memory_used_mb (total - available), not committed - available.
 

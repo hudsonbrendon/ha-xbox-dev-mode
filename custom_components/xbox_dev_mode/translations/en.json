@@ -22,10 +22,12 @@
     },
     "error": {
       "invalid_auth": "Invalid credentials. Please check your username and password. Make sure Dev Mode and Device Portal are enabled on your Xbox.",
-      "cannot_connect": "Cannot connect to the Xbox Device Portal. Make sure the Xbox is on, connected to the network, and Dev Mode with Device Portal is enabled."
+      "cannot_connect": "Cannot connect to the Xbox Device Portal. Make sure the Xbox is on, connected to the network, and Dev Mode with Device Portal is enabled.",
+      "unknown": "Unexpected error"
     },
     "abort": {
-      "already_configured": "This Xbox device is already configured"
+      "already_configured": "This Xbox device is already configured",
+      "reauth_successful": "Re-authentication was successful"
     }
   },
   "options": {
@@ -43,7 +45,14 @@
   },
   "entity": {
     "sensor": {
-      "console_state": { "name": "Console State" },
+      "console_state": {
+        "name": "Console State",
+        "state": {
+          "dev_mode": "Dev mode",
+          "retail": "Retail",
+          "off": "Off"
+        }
+      },
       "foreground_app": { "name": "Foreground App" },
       "cpu_load": { "name": "CPU Load" },
       "memory_used": { "name": "Memory Used" },

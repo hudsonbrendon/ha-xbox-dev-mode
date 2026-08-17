@@ -50,3 +50,16 @@ async def test_diagnostics_redacts_smb_credentials(hass, setup_integration, mock
     # The original password should never appear anywhere in the diagnostics
     diag_json = json.dumps(diag)
     assert "devpass123" not in diag_json, "Original password leaked in diagnostics!"
+
+
+async def test_diagnostics_skips_smb_lookup_when_off(hass, setup_integration_off, mock_devportal):
+    """SMB credentials live behind the Device Portal, unreachable in
+    retail/off. Diagnostics must not even attempt the lookup in that state.
+    """
+    from custom_components.xbox_dev_mode.diagnostics import async_get_config_entry_diagnostics
+
+    entry = hass.config_entries.async_entries("xbox_dev_mode")[0]
+    diag = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert "smb_credentials" not in diag
+    mock_devportal.smb_credentials.assert_not_awaited()

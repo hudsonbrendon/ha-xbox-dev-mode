@@ -1,8 +1,11 @@
 """Tests for integration setup and unload."""
 from unittest.mock import AsyncMock, patch, MagicMock
+
+import pytest
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
 from homeassistant.config_entries import ConfigEntryState
-from custom_components.xbox_dev_mode.const import DEFAULT_PORT
+from homeassistant.exceptions import HomeAssistantError
+from custom_components.xbox_dev_mode.const import DEFAULT_PORT, DOMAIN
 
 
 async def test_async_setup_entry_passes_credentials_to_portal():
@@ -23,9 +26,10 @@ async def test_async_setup_entry_passes_credentials_to_portal():
     entry.options = {}
 
     hass = AsyncMock()
-    # Configure services.async_register to be a MagicMock (not async)
-    # since the real Home Assistant method is synchronous
+    # Configure services.async_register/has_service to be MagicMocks (not
+    # async) since the real Home Assistant methods are synchronous.
     hass.services.async_register = MagicMock()
+    hass.services.has_service = MagicMock(return_value=False)
 
     with patch("custom_components.xbox_dev_mode.XboxDevPortal") as mock_portal_class, patch(
         "custom_components.xbox_dev_mode.async_get_clientsession"
@@ -63,9 +67,10 @@ async def test_async_setup_entry_uses_configured_port():
     entry.options = {}
 
     hass = AsyncMock()
-    # Configure services.async_register to be a MagicMock (not async)
-    # since the real Home Assistant method is synchronous
+    # Configure services.async_register/has_service to be MagicMocks (not
+    # async) since the real Home Assistant methods are synchronous.
     hass.services.async_register = MagicMock()
+    hass.services.has_service = MagicMock(return_value=False)
 
     with patch("custom_components.xbox_dev_mode.XboxDevPortal") as mock_portal_class, patch(
         "custom_components.xbox_dev_mode.async_get_clientsession"
@@ -114,3 +119,63 @@ async def test_async_unload_entry(hass):
     # Verify unload succeeded and platforms were unloaded with correct args
     assert result is True, "async_unload_entry should return True"
     hass.config_entries.async_unload_platforms.assert_called_once_with(entry, PLATFORMS)
+    # runtime_data must be cleared so a stray service call can't reach a
+    # torn-down coordinator.
+    assert entry.runtime_data is None
+
+
+async def test_get_coordinator_raises_clear_error_when_entry_unloaded(hass, setup_integration):
+    """_get_coordinator must raise a clear HomeAssistantError, not a raw
+    AttributeError, when the entry's coordinator has been torn down (e.g.
+    runtime_data cleared after an unload).
+    """
+    from custom_components.xbox_dev_mode import _get_coordinator
+
+    entry = hass.config_entries.async_entries(DOMAIN)[0]
+    entry.runtime_data = None
+
+    with pytest.raises(HomeAssistantError, match="not loaded"):
+        _get_coordinator(hass)
+
+
+async def test_services_unregistered_after_last_entry_unload(hass, setup_integration):
+    """Once the only config entry unloads, its services must be removed so a
+    stray service call can't reach a torn-down coordinator with a raw
+    AttributeError.
+    """
+    entry = hass.config_entries.async_entries(DOMAIN)[0]
+    assert hass.services.has_service(DOMAIN, "install_package")
+
+    await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert not hass.services.has_service(DOMAIN, "install_package")
+
+
+async def test_services_stay_registered_with_another_entry_loaded(hass, setup_integration):
+    """Unloading one of several config entries must not remove services that
+    another loaded entry still needs.
+    """
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    entry1 = hass.config_entries.async_entries(DOMAIN)[0]
+
+    entry2 = MockConfigEntry(
+        domain=DOMAIN,
+        title="Xbox (10.0.0.6)",
+        data={
+            CONF_HOST: "10.0.0.6",
+            CONF_USERNAME: "developer",
+            CONF_PASSWORD: "devpass",
+            CONF_PORT: DEFAULT_PORT,
+        },
+        unique_id="uuid:test2",
+    )
+    entry2.add_to_hass(hass)
+    await hass.config_entries.async_setup(entry2.entry_id)
+    await hass.async_block_till_done()
+
+    await hass.config_entries.async_unload(entry1.entry_id)
+    await hass.async_block_till_done()
+
+    assert hass.services.has_service(DOMAIN, "install_package")

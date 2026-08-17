@@ -9,7 +9,7 @@ from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN
+from .const import DOMAIN, STATE_DEV
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -56,8 +56,10 @@ async def async_get_config_entry_diagnostics(
         },
     }
 
-    # Fetch and redact SMB credentials if the client exposes them
-    if hasattr(coordinator.client, "smb_credentials"):
+    # Fetch and redact SMB credentials if the client exposes them. Only
+    # attempt this in dev_mode: retail/off consoles don't have Device Portal
+    # reachable, so the lookup would just fail (or hang) for no reason.
+    if coordinator_data.state == STATE_DEV and hasattr(coordinator.client, "smb_credentials"):
         try:
             smb_creds = await coordinator.client.smb_credentials()
             # Convert dataclass to dict and redact the password field

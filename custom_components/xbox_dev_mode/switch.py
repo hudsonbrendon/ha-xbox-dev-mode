@@ -29,8 +29,17 @@ SETTING_SWITCHES = [
 
 
 def _make_value_fn(setting_name: str) -> Callable[[XboxData], bool]:
-    """Generate value_fn for a switch."""
-    return lambda data: data.settings.get(setting_name).value == "true" if data.settings.get(setting_name) else False
+    """Generate value_fn for a switch.
+
+    The devportal library stringifies whatever the console returns
+    (``str(value)``), so a JSON ``true`` boolean arrives as ``"True"``, not
+    ``"true"``. Compare case-insensitively so the switch isn't stuck off.
+    """
+    def value_fn(data: XboxData) -> bool:
+        setting = data.settings.get(setting_name)
+        return setting is not None and setting.value.strip().lower() == "true"
+
+    return value_fn
 
 
 SWITCHES: list[XboxSwitchDescription] = [

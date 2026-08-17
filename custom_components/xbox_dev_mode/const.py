@@ -18,5 +18,10 @@ DEFAULT_SCAN_INTERVAL = 30
 DEFAULT_SCREENSHOT_INTERVAL = 60
 DEFAULT_SETTINGS_INTERVAL = 120
 
+# Minimum allowed intervals (in seconds). Screenshot interval has no minimum
+# above 0 since 0 intentionally means "off" (see config_flow options schema).
+MIN_SCAN_INTERVAL = 5
+MIN_SETTINGS_INTERVAL = 5
+
 # Platforms (populated incrementally in B4-B6)
 PLATFORMS = ["binary_sensor", "sensor", "select", "switch", "button", "image"]

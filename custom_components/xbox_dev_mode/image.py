@@ -4,6 +4,7 @@ from datetime import datetime
 from homeassistant.components.image import ImageEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+import homeassistant.util.dt as dt_util
 
 from .coordinator import XboxDevModeCoordinator
 from .entity import XboxEntity
@@ -41,7 +42,7 @@ class XboxScreenImage(XboxEntity, ImageEntity):
         1. Base availability is true (coordinator.available and dev_mode)
         2. Screenshot has been fetched and is not None
         """
-        base_available = XboxEntity.available.fget(self)
+        base_available = super().available
         if not base_available:
             return False
 
@@ -63,7 +64,7 @@ class XboxScreenImage(XboxEntity, ImageEntity):
         # Only update timestamp if screenshot data changed
         if current_screenshot and current_screenshot != self._last_screenshot:
             self._last_screenshot = current_screenshot
-            self._last_update_time = datetime.now()
+            self._last_update_time = dt_util.utcnow()
 
         return current_screenshot
 

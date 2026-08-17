@@ -46,7 +46,6 @@ BUTTONS: list[XboxButtonDescription] = [
         key="shutdown",
         translation_key="shutdown",
         press_fn=lambda coordinator: coordinator.client.shutdown(),
-        device_class="restart",
         entity_category=EntityCategory.CONFIG,
     ),
 ]

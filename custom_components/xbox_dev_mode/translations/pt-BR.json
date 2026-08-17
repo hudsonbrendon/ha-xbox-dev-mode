@@ -22,10 +22,12 @@
     },
     "error": {
       "invalid_auth": "Credenciais inválidas. Verifique seu usuário e senha. Certifique-se de que o Modo Desenvolvedor e o Device Portal estão ativados no seu Xbox.",
-      "cannot_connect": "Não é possível conectar ao Xbox Device Portal. Certifique-se de que o Xbox está ligado, conectado à rede e que o Modo Desenvolvedor com Device Portal está ativado."
+      "cannot_connect": "Não é possível conectar ao Xbox Device Portal. Certifique-se de que o Xbox está ligado, conectado à rede e que o Modo Desenvolvedor com Device Portal está ativado.",
+      "unknown": "Erro inesperado"
     },
     "abort": {
-      "already_configured": "Este dispositivo Xbox já está configurado"
+      "already_configured": "Este dispositivo Xbox já está configurado",
+      "reauth_successful": "Reautenticação concluída com sucesso"
     }
   },
   "options": {
@@ -43,7 +45,14 @@
   },
   "entity": {
     "sensor": {
-      "console_state": { "name": "Estado do Console" },
+      "console_state": {
+        "name": "Estado do Console",
+        "state": {
+          "dev_mode": "Modo desenvolvedor",
+          "retail": "Retail",
+          "off": "Desligado"
+        }
+      },
       "foreground_app": { "name": "Aplicativo em Primeiro Plano" },
       "cpu_load": { "name": "Uso de CPU" },
       "memory_used": { "name": "Memória Usada" },
