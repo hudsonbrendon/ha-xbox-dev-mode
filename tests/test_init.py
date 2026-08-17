@@ -23,6 +23,9 @@ async def test_async_setup_entry_passes_credentials_to_portal():
     entry.options = {}
 
     hass = AsyncMock()
+    # Configure services.async_register to be a MagicMock (not async)
+    # since the real Home Assistant method is synchronous
+    hass.services.async_register = MagicMock()
 
     with patch("custom_components.xbox_dev_mode.XboxDevPortal") as mock_portal_class, patch(
         "custom_components.xbox_dev_mode.async_get_clientsession"
@@ -60,6 +63,9 @@ async def test_async_setup_entry_uses_configured_port():
     entry.options = {}
 
     hass = AsyncMock()
+    # Configure services.async_register to be a MagicMock (not async)
+    # since the real Home Assistant method is synchronous
+    hass.services.async_register = MagicMock()
 
     with patch("custom_components.xbox_dev_mode.XboxDevPortal") as mock_portal_class, patch(
         "custom_components.xbox_dev_mode.async_get_clientsession"

@@ -1,6 +1,8 @@
 """Diagnostics for Xbox Dev Mode integration."""
 from __future__ import annotations
 
+import dataclasses
+import logging
 from typing import Any
 
 from homeassistant.components.diagnostics import async_redact_data
@@ -9,11 +11,13 @@ from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
 
+_LOGGER = logging.getLogger(__name__)
+
 # Fields to redact in config entry data
 REDACT_CONFIG = {"password"}
 
-# Fields to redact in coordinator data
-REDACT_COORDINATOR = {"password"}
+# Fields to redact in SMB credentials
+REDACT_SMB = {"password"}
 
 
 async def async_get_config_entry_diagnostics(
@@ -52,14 +56,16 @@ async def async_get_config_entry_diagnostics(
         },
     }
 
-    # Try to redact SMB credentials if the client exposes them
-    try:
-        if hasattr(coordinator.client, "smb_credentials"):
-            smb_creds = coordinator.client.smb_credentials()
-            if isinstance(smb_creds, dict):
-                diag["smb_credentials"] = async_redact_data(smb_creds, {"password", "passwd"})
-    except Exception:
-        # Ignore errors trying to fetch SMB credentials
-        pass
+    # Fetch and redact SMB credentials if the client exposes them
+    if hasattr(coordinator.client, "smb_credentials"):
+        try:
+            smb_creds = await coordinator.client.smb_credentials()
+            # Convert dataclass to dict and redact the password field
+            smb_dict = dataclasses.asdict(smb_creds)
+            diag["smb_credentials"] = async_redact_data(smb_dict, REDACT_SMB)
+        except AttributeError:
+            _LOGGER.debug("SMB credentials not available on this device")
+        except Exception as err:
+            _LOGGER.debug("Error fetching SMB credentials: %s", err)
 
     return diag

@@ -36,7 +36,7 @@ def _mock_xbox_devportal():
     return values that match the xbox-devportal library's actual types.
     """
     global _mock_devportal_instance
-    from xbox_devportal.models import DeviceInfo, SystemPerf, Process, Package, Setting
+    from xbox_devportal.models import DeviceInfo, SystemPerf, Process, Package, Setting, SmbShare
 
     with patch("custom_components.xbox_dev_mode.XboxDevPortal") as mock_portal_class, \
          patch("xbox_devportal.XboxDevPortal") as mock_xbox:
@@ -86,6 +86,13 @@ def _mock_xbox_devportal():
         mock_instance.screenshot = AsyncMock(return_value=b"\x89PNG\r\n\x1a\n")
         mock_instance.sandbox = AsyncMock(return_value="XDKS.1")
         mock_instance.set_setting = AsyncMock()
+        mock_instance.smb_credentials = AsyncMock(
+            return_value=SmbShare(
+                path=r"\\XBOX\Scratch",
+                username="developer",
+                password="devpass123",
+            )
+        )
         mock_portal_class.return_value = mock_instance
         mock_xbox.return_value = mock_instance
         _mock_devportal_instance = mock_instance

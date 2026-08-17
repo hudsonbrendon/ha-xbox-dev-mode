@@ -22,13 +22,31 @@ async def test_diagnostics_includes_device_info(hass, setup_integration):
 
 
 async def test_diagnostics_redacts_smb_credentials(hass, setup_integration, mock_devportal):
-    """Test that diagnostics redact SMB credentials if exposed by client."""
-    from custom_components.xbox_dev_mode.diagnostics import async_get_config_entry_diagnostics
+    """Test that diagnostics redact SMB credentials properly.
 
-    # Mock smb_credentials() to return a dict with credentials
-    mock_devportal.smb_credentials = lambda: {"username": "admin", "password": "secret"}
+    Verifies that:
+    1. SMB credentials are included in diagnostics
+    2. The password field is redacted to **REDACTED**
+    3. The username and path fields are preserved
+    4. The sensitive password never appears in the diagnostic output
+    """
+    import json
+    from custom_components.xbox_dev_mode.diagnostics import async_get_config_entry_diagnostics
 
     entry = hass.config_entries.async_entries("xbox_dev_mode")[0]
     diag = await async_get_config_entry_diagnostics(hass, entry)
-    # Should redact any password-like fields
-    assert "**REDACTED**" in str(diag) or "password" not in str(diag).lower()
+
+    # SMB credentials should be present
+    assert "smb_credentials" in diag
+
+    smb = diag["smb_credentials"]
+    # Username and path should be preserved
+    assert smb["username"] == "developer"
+    assert smb["path"] == r"\\XBOX\Scratch"
+
+    # Password should be redacted
+    assert smb["password"] == "**REDACTED**"
+
+    # The original password should never appear anywhere in the diagnostics
+    diag_json = json.dumps(diag)
+    assert "devpass123" not in diag_json, "Original password leaked in diagnostics!"
