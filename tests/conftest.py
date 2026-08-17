@@ -36,11 +36,12 @@ def _mock_xbox_devportal():
     return values that match the xbox-devportal library's actual types.
     """
     global _mock_devportal_instance
+    from xbox_devportal import XboxDevPortal
     from xbox_devportal.models import DeviceInfo, SystemPerf, Process, Package, Setting, SmbShare
 
     with patch("custom_components.xbox_dev_mode.XboxDevPortal") as mock_portal_class, \
          patch("xbox_devportal.XboxDevPortal") as mock_xbox:
-        mock_instance = AsyncMock()
+        mock_instance = AsyncMock(spec=XboxDevPortal)
         # Set up proper return values for each method
         mock_instance.info = AsyncMock(
             return_value=DeviceInfo(

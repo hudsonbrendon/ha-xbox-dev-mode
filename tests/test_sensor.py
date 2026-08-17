@@ -1,5 +1,8 @@
 """Tests for Xbox Dev Mode sensor platform."""
 from custom_components.xbox_dev_mode.const import STATE_DEV, STATE_OFF
+from custom_components.xbox_dev_mode.coordinator import XboxData
+from custom_components.xbox_dev_mode.sensor import SENSORS
+from xbox_devportal.models import SystemPerf
 
 
 async def test_sensors_created_and_state(hass, setup_integration):
@@ -29,3 +32,28 @@ async def test_sandbox_sensor_available_when_off(hass, setup_integration_off):
     state = hass.states.get("sensor.xbox_sandbox")
     assert state.state != "unavailable"
     assert state.state == "unknown"
+
+
+def test_memory_used_matches_lib_memory_used_mb():
+    """memory_used must use SystemPerf.memory_used_mb (total - available), not committed - available.
+
+    Real console payload: total_pages=327680, available_pages=45557,
+    committed_pages=1624279, page_size=4096.
+    Correct value: (327680 - 45557) * 4096 // (1024*1024) = 1102 MB.
+    The old (buggy) formula used committed_pages instead of total_pages and
+    reported 6166 MB, over 5x the true 1280 MB total.
+    """
+    perf = SystemPerf(
+        cpu_load=3,
+        total_pages=327680,
+        available_pages=45557,
+        committed_pages=1624279,
+        page_size=4096,
+        gpu_dedicated=134217728,
+        gpu_dedicated_used=123781120,
+    )
+    data = XboxData(state=STATE_DEV, perf=perf)
+
+    memory_used = next(s for s in SENSORS if s.key == "memory_used")
+
+    assert memory_used.value_fn(data) == perf.memory_used_mb == 1102

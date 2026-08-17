@@ -48,11 +48,7 @@ SENSORS: list[XboxSensorDescription] = [
     XboxSensorDescription(
         key="memory_used",
         translation_key="memory_used",
-        value_fn=lambda data: (
-            int((data.perf.committed_pages - data.perf.available_pages) * data.perf.page_size / (1024 * 1024))
-            if data.perf
-            else None
-        ),
+        value_fn=lambda data: data.perf.memory_used_mb if data.perf else None,
         native_unit_of_measurement=UnitOfInformation.MEGABYTES,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DATA_SIZE,
@@ -61,11 +57,7 @@ SENSORS: list[XboxSensorDescription] = [
     XboxSensorDescription(
         key="memory_available",
         translation_key="memory_available",
-        value_fn=lambda data: (
-            int(data.perf.available_pages * data.perf.page_size / (1024 * 1024))
-            if data.perf
-            else None
-        ),
+        value_fn=lambda data: data.perf.memory_available_mb if data.perf else None,
         native_unit_of_measurement=UnitOfInformation.MEGABYTES,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DATA_SIZE,
@@ -74,11 +66,7 @@ SENSORS: list[XboxSensorDescription] = [
     XboxSensorDescription(
         key="gpu_memory_used",
         translation_key="gpu_memory_used",
-        value_fn=lambda data: (
-            int(data.perf.gpu_dedicated_used / (1024 * 1024))
-            if data.perf
-            else None
-        ),
+        value_fn=lambda data: data.perf.gpu_memory_used_mb if data.perf else None,
         native_unit_of_measurement=UnitOfInformation.MEGABYTES,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DATA_SIZE,

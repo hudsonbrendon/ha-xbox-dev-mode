@@ -123,7 +123,7 @@ def _register_services(hass):
             raise HomeAssistantError(f"Path not allowed: {path}")
 
         try:
-            await coordinator.client.install_package(path)
+            await coordinator.client.install(path)
         except Exception as e:
             _LOGGER.error("Error installing package: %s", e)
             raise HomeAssistantError(f"Failed to install package: {e}") from e
@@ -134,7 +134,7 @@ def _register_services(hass):
         coordinator = _get_coordinator(hass)
 
         try:
-            await coordinator.client.uninstall_package(package_full_name)
+            await coordinator.client.uninstall(package_full_name)
         except Exception as e:
             _LOGGER.error("Error uninstalling package: %s", e)
             raise HomeAssistantError(f"Failed to uninstall package: {e}") from e

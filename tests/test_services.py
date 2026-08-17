@@ -5,27 +5,24 @@ from unittest.mock import AsyncMock, patch
 
 
 async def test_install_service_calls_client(hass, setup_integration, mock_devportal):
-    """Test that install_package service calls the client."""
-    mock_devportal.install_package = AsyncMock()
-
+    """Test that install_package service calls the client's install() method."""
     # Mock is_allowed_path to allow the file
     with patch.object(hass.config, "is_allowed_path", return_value=True):
         await hass.services.async_call(
             "xbox_dev_mode", "install_package", {"path": "/fake/path/x.appx"}, blocking=True
         )
-    mock_devportal.install_package.assert_awaited_once()
+    mock_devportal.install.assert_awaited_once_with("/fake/path/x.appx")
 
 
 async def test_uninstall_service_calls_client(hass, setup_integration, mock_devportal):
-    """Test that uninstall_package service calls the client."""
-    mock_devportal.uninstall_package = AsyncMock()
+    """Test that uninstall_package service calls the client's uninstall() method."""
     await hass.services.async_call(
         "xbox_dev_mode",
         "uninstall_package",
         {"package_full_name": "1e4c_1.19.0.0_x64__1e4c_x!App"},
         blocking=True,
     )
-    mock_devportal.uninstall_package.assert_awaited_once()
+    mock_devportal.uninstall.assert_awaited_once_with("1e4c_1.19.0.0_x64__1e4c_x!App")
 
 
 async def test_launch_service_calls_client(hass, setup_integration, mock_devportal):
