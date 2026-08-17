@@ -128,11 +128,15 @@ async def test_get_coordinator_raises_clear_error_when_entry_unloaded(hass, setu
     """_get_coordinator must raise a clear HomeAssistantError, not a raw
     AttributeError, when the entry's coordinator has been torn down (e.g.
     runtime_data cleared after an unload).
+
+    Home Assistant actually *deletes* the runtime_data attribute after a
+    successful unload (it doesn't set it to None), so the fixture must
+    reflect that with delattr rather than assignment.
     """
     from custom_components.xbox_dev_mode import _get_coordinator
 
     entry = hass.config_entries.async_entries(DOMAIN)[0]
-    entry.runtime_data = None
+    delattr(entry, "runtime_data")
 
     with pytest.raises(HomeAssistantError, match="not loaded"):
         _get_coordinator(hass)

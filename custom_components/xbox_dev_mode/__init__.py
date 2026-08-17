@@ -123,7 +123,7 @@ def _get_coordinator(hass, device_id: str | None = None):
     if device_id:
         # Find entry by device_id
         for entry in entries:
-            coordinator = entry.runtime_data
+            coordinator = getattr(entry, "runtime_data", None)
             if coordinator and hasattr(coordinator, "_host"):
                 # Match by host (simple device identifier)
                 if coordinator._host == device_id:
@@ -132,7 +132,7 @@ def _get_coordinator(hass, device_id: str | None = None):
 
     # If only one entry, use it
     if len(entries) == 1:
-        coordinator = entries[0].runtime_data
+        coordinator = getattr(entries[0], "runtime_data", None)
         if coordinator is None:
             raise HomeAssistantError(
                 f"The {DOMAIN} integration is not loaded; reload it and try again"
