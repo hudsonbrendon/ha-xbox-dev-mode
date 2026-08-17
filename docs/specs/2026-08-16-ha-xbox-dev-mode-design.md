@@ -15,7 +15,7 @@ Mesmo padrão do `ha-xbox360-aurora` (lib `xbox360-nova` no PyPI + integração 
 
 ## Fatos verificados no console real (Series S, OS 26100.9426)
 
-Tudo abaixo foi testado nesta sessão contra `https://192.168.31.222:11443`:
+Tudo abaixo foi testado contra um Xbox Series S real em `https://<console>:11443`:
 
 | Endpoint | Verbo | Retorna / faz |
 |---|---|---|
