@@ -1,8 +1,10 @@
 import logging
 from urllib.parse import urlparse
+import aiohttp
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from xbox_devportal import XboxDevPortal, AuthError, DevPortalUnreachable
 from .const import (DOMAIN, DEFAULT_PORT, CONF_SCAN_INTERVAL, CONF_SCREENSHOT_INTERVAL,
                     CONF_SETTINGS_INTERVAL, DEFAULT_SCAN_INTERVAL,
@@ -57,16 +59,41 @@ class XboxDevModeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         schema = self.add_suggested_values_to_schema(_SCHEMA, self._discovered.get("suggest", {}))
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
 
+    async def _has_device_portal(self, host: str) -> bool:
+        """O Device Portal existe nesse host?
+
+        Descoberta por SSDP/DHCP pesca qualquer aparelho Microsoft da rede: um Xbox 360
+        anunciando DLNA, ou a segunda interface do proprio console (Wi-Fi e Ethernet tem
+        MACs consecutivos e IPs distintos, e o portal escuta em apenas uma). Nenhum deles
+        pode virar cartao de descoberta — o portal so existe em Dev Mode.
+
+        Nao precisa de credencial: qualquer resposta HTTP prova que o portal esta ali
+        (sem auth ele devolve 401 ou redireciona). Falha de conexao prova que nao esta.
+        """
+        session = async_get_clientsession(self.hass)
+        try:
+            async with session.get(f"https://{host}:{DEFAULT_PORT}/", ssl=False,
+                                   timeout=aiohttp.ClientTimeout(total=5)) as r:
+                return r.status > 0
+        except Exception:
+            return False
+
     async def async_step_ssdp(self, discovery_info):
         host = urlparse(discovery_info.ssdp_location or "").hostname or ""
-        self._discovered = {"udn": discovery_info.ssdp_udn, "suggest": {CONF_HOST: host}}
+        self._async_abort_entries_match({CONF_HOST: host})
         await self.async_set_unique_id(discovery_info.ssdp_udn)
         self._abort_if_unique_id_configured()
+        if not await self._has_device_portal(host):
+            return self.async_abort(reason="no_device_portal")
+        self._discovered = {"udn": discovery_info.ssdp_udn, "suggest": {CONF_HOST: host}}
         return await self.async_step_user()
 
     async def async_step_dhcp(self, discovery_info):
+        self._async_abort_entries_match({CONF_HOST: discovery_info.ip})
         await self.async_set_unique_id(f"{discovery_info.ip}:{DEFAULT_PORT}", raise_on_progress=False)
         self._abort_if_unique_id_configured()
+        if not await self._has_device_portal(discovery_info.ip):
+            return self.async_abort(reason="no_device_portal")
         self._discovered = {"suggest": {CONF_HOST: discovery_info.ip}}
         return await self.async_step_user()
 

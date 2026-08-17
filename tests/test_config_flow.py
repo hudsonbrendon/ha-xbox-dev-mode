@@ -80,11 +80,16 @@ async def test_user_flow_bad_auth(hass):
 
 @respx.mock
 async def test_ssdp_shows_form(hass):
+    # A descoberta agora sonda a porta 11443 antes de oferecer o cartao, entao a sondagem
+    # precisa ser mockada — sem isso o teste tentaria abrir socket de verdade e o fluxo
+    # abortaria com no_device_portal.
     info = SsdpServiceInfo(ssdp_usn="usn", ssdp_st="st",
                            ssdp_udn="uuid:08e2300a-1a55", ssdp_location="http://10.0.0.5:2869/x",
                            upnp={})
-    r = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": "ssdp"}, data=info)
+    with patch("custom_components.xbox_dev_mode.config_flow."
+               "XboxDevModeConfigFlow._has_device_portal", AsyncMock(return_value=True)):
+        r = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": "ssdp"}, data=info)
     assert r["type"] == data_entry_flow.FlowResultType.FORM
     assert r["step_id"] == "user"
 
@@ -223,3 +228,62 @@ async def test_user_flow_aborts_when_host_already_configured(hass):
     assert r2["type"] == data_entry_flow.FlowResultType.ABORT
     assert r2["reason"] == "already_configured"
     assert len(hass.config_entries.async_entries(DOMAIN)) == 1
+
+
+def _patch_portal(existe: bool):
+    """Controla a sondagem do Device Portal feita na descoberta."""
+    from unittest.mock import AsyncMock, patch
+    return patch(
+        "custom_components.xbox_dev_mode.config_flow.XboxDevModeConfigFlow._has_device_portal",
+        AsyncMock(return_value=existe))
+
+
+async def test_ssdp_aborts_when_no_device_portal(hass):
+    """Aparelho Microsoft sem Device Portal nao pode virar cartao de descoberta.
+
+    Caso real: o SSDP pescou um Xbox 360 anunciando DLNA e a segunda interface de rede
+    do proprio Series S (Wi-Fi e Ethernet tem MACs consecutivos e IPs distintos, e o
+    portal escuta em apenas uma). Os tres viravam cartao "Adicionar" na interface.
+    """
+    from homeassistant.helpers.service_info.ssdp import SsdpServiceInfo
+
+    info = SsdpServiceInfo(ssdp_usn="usn", ssdp_st="st",
+                           ssdp_udn="uuid:11226360-4308-2000-0000-0025aebf6658",
+                           ssdp_location="http://10.0.0.9:2869/x", upnp={})
+    with _patch_portal(False):
+        r = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": "ssdp"}, data=info)
+
+    assert r["type"] == data_entry_flow.FlowResultType.ABORT
+    assert r["reason"] == "no_device_portal"
+
+
+async def test_ssdp_shows_form_when_portal_answers(hass):
+    """Com o portal respondendo, a descoberta segue para o formulario."""
+    from homeassistant.helpers.service_info.ssdp import SsdpServiceInfo
+
+    info = SsdpServiceInfo(ssdp_usn="usn", ssdp_st="st",
+                           ssdp_udn="uuid:08e2300a-1a55-4464-8689-835078580a45",
+                           ssdp_location="http://10.0.0.5:2869/x", upnp={})
+    with _patch_portal(True):
+        r = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": "ssdp"}, data=info)
+
+    assert r["type"] == data_entry_flow.FlowResultType.FORM
+    assert r["step_id"] == "user"
+
+
+def test_ssdp_matcher_is_specific_enough():
+    """O matcher precisa do modelName; manufacturer+deviceType sozinhos pescam
+    qualquer renderer DLNA da Microsoft (Windows Media Player, Xbox 360).
+    """
+    manifest = json.loads((COMPONENT_DIR / "manifest.json").read_text())
+    matcher = manifest["ssdp"][0]
+    assert matcher["manufacturer"] == "Microsoft Corporation"
+    assert matcher["modelName"] == "Xbox One"
+
+
+def test_translation_files_have_no_device_portal_abort():
+    for relpath in ("strings.json", "translations/en.json", "translations/pt-BR.json"):
+        data = json.loads((COMPONENT_DIR / relpath).read_text())
+        assert data["config"]["abort"]["no_device_portal"], relpath

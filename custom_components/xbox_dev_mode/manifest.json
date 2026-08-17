@@ -16,7 +16,8 @@
   "ssdp": [
     {
       "manufacturer": "Microsoft Corporation",
-      "deviceType": "urn:schemas-upnp-org:device:MediaRenderer:1"
+      "deviceType": "urn:schemas-upnp-org:device:MediaRenderer:1",
+      "modelName": "Xbox One"
     }
   ],
   "dhcp": [
@@ -24,5 +25,5 @@
       "macaddress": "38563D*"
     }
   ],
-  "version": "0.1.1"
+  "version": "0.1.2"
 }

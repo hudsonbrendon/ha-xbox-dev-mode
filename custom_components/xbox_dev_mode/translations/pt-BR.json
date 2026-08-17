@@ -27,7 +27,8 @@
     },
     "abort": {
       "already_configured": "Este dispositivo Xbox já está configurado",
-      "reauth_successful": "Reautenticação concluída com sucesso"
+      "reauth_successful": "Reautenticação concluída com sucesso",
+      "no_device_portal": "Este aparelho não expõe o Xbox Device Portal. Só um console em Modo Desenvolvedor expõe — um console em Retail ou outro aparelho Microsoft da rede não serve."
     }
   },
   "options": {
@@ -53,41 +54,91 @@
           "off": "Desligado"
         }
       },
-      "foreground_app": { "name": "Aplicativo em Primeiro Plano" },
-      "cpu_load": { "name": "Uso de CPU" },
-      "memory_used": { "name": "Memória Usada" },
-      "memory_available": { "name": "Memória Disponível" },
-      "gpu_memory_used": { "name": "Memória de GPU Usada" },
-      "sideloaded_apps": { "name": "Aplicativos Sideloaded" },
-      "sandbox": { "name": "Sandbox" },
-      "os_version": { "name": "Versão do OS" }
+      "foreground_app": {
+        "name": "Aplicativo em Primeiro Plano"
+      },
+      "cpu_load": {
+        "name": "Uso de CPU"
+      },
+      "memory_used": {
+        "name": "Memória Usada"
+      },
+      "memory_available": {
+        "name": "Memória Disponível"
+      },
+      "gpu_memory_used": {
+        "name": "Memória de GPU Usada"
+      },
+      "sideloaded_apps": {
+        "name": "Aplicativos Sideloaded"
+      },
+      "sandbox": {
+        "name": "Sandbox"
+      },
+      "os_version": {
+        "name": "Versão do OS"
+      }
     },
     "binary_sensor": {
-      "dev_mode": { "name": "Modo Desenvolvedor" }
+      "dev_mode": {
+        "name": "Modo Desenvolvedor"
+      }
     },
     "select": {
-      "app": { "name": "Aplicativo" },
-      "tv_resolution": { "name": "Resolução da TV" },
-      "power_mode": { "name": "Modo de Energia" },
-      "hdmi_audio": { "name": "Áudio HDMI" },
-      "color_space": { "name": "Espaço de Cores" },
-      "headset_format": { "name": "Formato de Headset" },
-      "default_app": { "name": "Aplicativo Padrão" }
+      "app": {
+        "name": "Aplicativo"
+      },
+      "tv_resolution": {
+        "name": "Resolução da TV"
+      },
+      "power_mode": {
+        "name": "Modo de Energia"
+      },
+      "hdmi_audio": {
+        "name": "Áudio HDMI"
+      },
+      "color_space": {
+        "name": "Espaço de Cores"
+      },
+      "headset_format": {
+        "name": "Formato de Headset"
+      },
+      "default_app": {
+        "name": "Aplicativo Padrão"
+      }
     },
     "switch": {
-      "allow_hdr": { "name": "Permitir HDR" },
-      "allow_4k": { "name": "Permitir 4K" },
-      "allow_vrr": { "name": "Permitir VRR" },
-      "allow_allm": { "name": "Permitir ALLM" }
+      "allow_hdr": {
+        "name": "Permitir HDR"
+      },
+      "allow_4k": {
+        "name": "Permitir 4K"
+      },
+      "allow_vrr": {
+        "name": "Permitir VRR"
+      },
+      "allow_allm": {
+        "name": "Permitir ALLM"
+      }
     },
     "button": {
-      "launch_app": { "name": "Iniciar Aplicativo" },
-      "terminate_foreground": { "name": "Encerrar em Primeiro Plano" },
-      "restart": { "name": "Reiniciar" },
-      "shutdown": { "name": "Desligar" }
+      "launch_app": {
+        "name": "Iniciar Aplicativo"
+      },
+      "terminate_foreground": {
+        "name": "Encerrar em Primeiro Plano"
+      },
+      "restart": {
+        "name": "Reiniciar"
+      },
+      "shutdown": {
+        "name": "Desligar"
+      }
     },
     "image": {
-      "screen": { "name": "Tela" }
+      "screen": {
+        "name": "Tela"
+      }
     }
   }
 }
