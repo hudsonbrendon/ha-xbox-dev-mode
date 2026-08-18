@@ -24,4 +24,4 @@ MIN_SCAN_INTERVAL = 5
 MIN_SETTINGS_INTERVAL = 5
 
 # Platforms (populated incrementally in B4-B6)
-PLATFORMS = ["binary_sensor", "sensor", "select", "switch", "button", "image"]
+PLATFORMS = ["binary_sensor", "sensor", "select", "switch", "button", "image", "remote"]

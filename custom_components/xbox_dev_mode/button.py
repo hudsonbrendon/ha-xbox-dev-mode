@@ -48,6 +48,12 @@ BUTTONS: list[XboxButtonDescription] = [
         press_fn=lambda coordinator: coordinator.client.shutdown(),
         entity_category=EntityCategory.CONFIG,
     ),
+    XboxButtonDescription(
+        key="disconnect_controllers",
+        translation_key="disconnect_controllers",
+        press_fn=lambda coordinator: coordinator.client.disconnect_controllers(),
+        entity_category=EntityCategory.CONFIG,
+    ),
 ]
 
 

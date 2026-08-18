@@ -7444,13 +7444,13 @@ dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-homeassistant-custom-component" },
-    { name = "xbox-devportal", directory = "/Users/hudsonbrendon/Github/xbox-devportal" },
+    { name = "xbox-devportal", directory = "../xbox-devportal" },
 ]
 
 [[package]]
 name = "xbox-devportal"
-version = "0.1.0"
-source = { directory = "/Users/hudsonbrendon/Github/xbox-devportal" }
+version = "0.2.0"
+source = { directory = "../xbox-devportal" }
 dependencies = [
     { name = "aiohttp", version = "3.11.11", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
     { name = "aiohttp", version = "3.11.16", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and python_full_version < '3.13.2'" },

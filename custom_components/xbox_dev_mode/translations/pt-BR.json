@@ -77,6 +77,18 @@
       },
       "os_version": {
         "name": "Versão do OS"
+      },
+      "signed_in_user": {
+        "name": "Usuário conectado"
+      },
+      "controllers": {
+        "name": "Controles conectados"
+      },
+      "console_model": {
+        "name": "Modelo do console"
+      },
+      "devkit_certificate_expiration": {
+        "name": "Expiração do certificado do dev kit"
       }
     },
     "binary_sensor": {
@@ -133,11 +145,19 @@
       },
       "shutdown": {
         "name": "Desligar"
+      },
+      "disconnect_controllers": {
+        "name": "Desconectar controles"
       }
     },
     "image": {
       "screen": {
         "name": "Tela"
+      }
+    },
+    "remote": {
+      "remote": {
+        "name": "Controle"
       }
     }
   }

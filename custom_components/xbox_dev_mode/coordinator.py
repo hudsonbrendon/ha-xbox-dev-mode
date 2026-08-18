@@ -14,6 +14,8 @@ from xbox_devportal import (
     Process,
     Package,
     Setting,
+    XboxInfo,
+    XboxUser,
 )
 
 from .const import DOMAIN, STATE_DEV, STATE_RETAIL, STATE_OFF
@@ -33,6 +35,9 @@ class XboxData:
     settings: dict[str, Setting] = field(default_factory=dict)
     screenshot: bytes | None = None
     sandbox: str | None = None
+    xbox_info: XboxInfo | None = None
+    users: list[XboxUser] = field(default_factory=list)
+    controller_count: int | None = None
 
 
 class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
@@ -66,6 +71,7 @@ class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
         self._tick = 0
         self._last_settings: dict = {}
         self._last_shot: bytes | None = None
+        self._last_xbox_info: XboxInfo | None = None
         self._last_sandbox: str | None = None
         self.selected_app: str | None = None
 
@@ -141,6 +147,16 @@ class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
         if self._due(self._settings_iv):
             self._last_sandbox = await self.client.sandbox()
 
+        # Identidade do console e certificado do devkit: quase estaticos; a primeira
+        # busca acontece ja no primeiro ciclo, depois segue a cadencia lenta.
+        if self._last_xbox_info is None or self._due(self._settings_iv):
+            self._last_xbox_info = await self.client.xbox_info()
+
+        # Usuario logado e controles conectados: mudam a qualquer momento e as
+        # respostas custam ~200 bytes — busca em todo ciclo.
+        users = await self.client.users()
+        controllers = await self.client.controller_count()
+
         # Advance cadence tick only after a successful dev-mode cycle, and
         # after the _due() checks above (so tick 0 = first cycle = due).
         self._tick += 1
@@ -154,4 +170,7 @@ class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
             settings=self._last_settings,
             screenshot=self._last_shot,
             sandbox=self._last_sandbox,
+            xbox_info=self._last_xbox_info,
+            users=users,
+            controller_count=controllers,
         )

@@ -77,6 +77,18 @@
       },
       "os_version": {
         "name": "OS Version"
+      },
+      "signed_in_user": {
+        "name": "Signed-in user"
+      },
+      "controllers": {
+        "name": "Connected controllers"
+      },
+      "console_model": {
+        "name": "Console model"
+      },
+      "devkit_certificate_expiration": {
+        "name": "Dev kit certificate expiration"
       }
     },
     "binary_sensor": {
@@ -133,11 +145,19 @@
       },
       "shutdown": {
         "name": "Shutdown"
+      },
+      "disconnect_controllers": {
+        "name": "Disconnect controllers"
       }
     },
     "image": {
       "screen": {
         "name": "Screen"
+      }
+    },
+    "remote": {
+      "remote": {
+        "name": "Controller"
       }
     }
   }

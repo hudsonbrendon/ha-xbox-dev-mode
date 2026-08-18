@@ -37,7 +37,8 @@ def _mock_xbox_devportal():
     """
     global _mock_devportal_instance
     from xbox_devportal import XboxDevPortal
-    from xbox_devportal.models import DeviceInfo, SystemPerf, Process, Package, Setting, SmbShare
+    from xbox_devportal.models import (DeviceInfo, SystemPerf, Process, Package, Setting,
+                                       SmbShare, XboxInfo, XboxUser)
 
     with patch("custom_components.xbox_dev_mode.XboxDevPortal") as mock_portal_class, \
          patch("xbox_devportal.XboxDevPortal") as mock_xbox:
@@ -94,6 +95,27 @@ def _mock_xbox_devportal():
                 password="devpass123",
             )
         )
+        mock_instance.xbox_info = AsyncMock(
+            return_value=XboxInfo(
+                os_version="10.0.26100.9426",
+                dev_mode="Universal Windows App Devkit",
+                os_edition="August 2026",
+                console_type="Lockhart",
+                console_id="fc2e882b.da781302.d95ce169.16d77f0c.01",
+                device_id="F4001DA0057F0978",
+                serial_number="218131213717",
+                devkit_certificate_expiration=1792168903,
+            )
+        )
+        mock_instance.users = AsyncMock(
+            return_value=[XboxUser(
+                user_id=16, email_address="dev@example.com", gamertag="hud7796",
+                xbox_user_id="2535419684726904", signed_in=True, auto_sign_in=True,
+            )]
+        )
+        mock_instance.controller_count = AsyncMock(return_value=1)
+        mock_instance.disconnect_controllers = AsyncMock()
+        mock_instance.press_gamepad_button = AsyncMock()
         mock_portal_class.return_value = mock_instance
         mock_xbox.return_value = mock_instance
         _mock_devportal_instance = mock_instance

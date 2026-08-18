@@ -10,7 +10,7 @@
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/hudsonbrendon/ha-xbox-dev-mode/issues",
   "requirements": [
-    "xbox-devportal>=0.1.0",
+    "xbox-devportal>=0.2.0",
     "icmplib==3.0.4"
   ],
   "ssdp": [
@@ -25,5 +25,5 @@
       "macaddress": "38563D*"
     }
   ],
-  "version": "0.1.5"
+  "version": "0.2.0"
 }

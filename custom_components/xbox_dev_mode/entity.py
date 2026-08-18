@@ -6,6 +6,16 @@ from .const import DOMAIN, STATE_DEV
 from .coordinator import XboxDevModeCoordinator
 
 
+# Codinomes de placa que o /ext/xbox/info reporta em ConsoleType.
+_MODELO_COMERCIAL = {
+    "Lockhart": "Xbox Series S",
+    "Anaconda": "Xbox Series X",
+    "Scarlett": "Xbox Series X|S",
+    "Edmonton": "Xbox One X",
+    "Durango": "Xbox One",
+}
+
+
 class XboxEntity(CoordinatorEntity[XboxDevModeCoordinator]):
     """Base entity for Xbox Dev Mode integration.
 
@@ -36,14 +46,24 @@ class XboxEntity(CoordinatorEntity[XboxDevModeCoordinator]):
         console state transitions). Model is cosmetic and can fallback.
         """
         model = "Unknown"
-        if self.coordinator.data and self.coordinator.data.info:
-            model = self.coordinator.data.info.platform
+        sw_version = None
+        serial = None
+        data = self.coordinator.data
+        if data and data.info:
+            model = data.info.platform
+        # /ext/xbox/info da o modelo comercial (do codinome), serial e versao do OS.
+        if data and data.xbox_info:
+            model = _MODELO_COMERCIAL.get(data.xbox_info.console_type, model)
+            serial = data.xbox_info.serial_number or None
+            sw_version = data.xbox_info.os_version or None
 
         return DeviceInfo(
             identifiers={(DOMAIN, self._entry_unique_id)},
             manufacturer="Microsoft",
             model=model,
             name="Xbox",
+            serial_number=serial,
+            sw_version=sw_version,
         )
 
     @property
