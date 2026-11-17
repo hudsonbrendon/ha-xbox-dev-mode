@@ -1,7 +1,6 @@
 {
   "name": "Xbox Dev Mode",
   "homeassistant": "2024.12.0",
-  "documentation": "https://github.com/hudsonbrendon/ha-xbox-dev-mode",
   "issues": "https://github.com/hudsonbrendon/ha-xbox-dev-mode/issues",
   "render_readme": true
 }
