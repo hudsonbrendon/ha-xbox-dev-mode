@@ -37,7 +37,8 @@ async def test_device_info_uses_commercial_model_and_serial(hass, setup_integrat
     """O device no registry deve mostrar 'Xbox Series S' (de Lockhart) e o serial."""
     from homeassistant.helpers import device_registry as dr
     reg = dr.async_get(hass)
-    dev = next(iter(reg.devices.values()))
+    entry = hass.config_entries.async_entries("xbox_dev_mode")[0]
+    (dev,) = dr.async_entries_for_config_entry(reg, entry.entry_id)
     assert dev.model == "Xbox Series S"
     assert dev.serial_number == "218131213717"
 

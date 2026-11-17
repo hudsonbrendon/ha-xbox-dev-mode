@@ -5,24 +5,24 @@
     "@hudsonbrendon"
   ],
   "config_flow": true,
+  "dhcp": [
+    {
+      "macaddress": "38563D*"
+    }
+  ],
   "documentation": "https://github.com/hudsonbrendon/ha-xbox-dev-mode",
   "integration_type": "device",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/hudsonbrendon/ha-xbox-dev-mode/issues",
   "requirements": [
     "xbox-devportal>=0.2.1",
-    "icmplib==3.0.4"
+    "icmplib>=3.0.4"
   ],
   "ssdp": [
     {
       "manufacturer": "Microsoft Corporation",
       "deviceType": "urn:schemas-upnp-org:device:MediaRenderer:1",
       "modelName": "Xbox One"
-    }
-  ],
-  "dhcp": [
-    {
-      "macaddress": "38563D*"
     }
   ],
   "version": "0.2.1"
