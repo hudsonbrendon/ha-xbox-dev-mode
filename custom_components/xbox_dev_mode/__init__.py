@@ -3,8 +3,9 @@ import logging
 
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from xbox_devportal import XboxDevPortal
 
 from .const import (
     CONF_SCAN_INTERVAL,
@@ -18,7 +19,6 @@ from .const import (
     PLATFORMS,
 )
 from .coordinator import XboxDevModeCoordinator
-from xbox_devportal import XboxDevPortal
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -124,7 +124,7 @@ def _get_coordinator(hass, device_id: str | None = None):
         # Find entry by device_id
         for entry in entries:
             coordinator = getattr(entry, "runtime_data", None)
-            if coordinator and hasattr(coordinator, "_host"):
+            if coordinator and hasattr(coordinator, "_host"):  # noqa: SIM102
                 # Match by host (simple device identifier)
                 if coordinator._host == device_id:
                     return coordinator

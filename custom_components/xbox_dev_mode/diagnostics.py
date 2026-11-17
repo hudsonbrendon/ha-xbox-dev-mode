@@ -9,7 +9,7 @@ from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, STATE_DEV
+from .const import STATE_DEV
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ async def async_get_config_entry_diagnostics(
             diag["smb_credentials"] = async_redact_data(smb_dict, REDACT_SMB)
         except AttributeError:
             _LOGGER.debug("SMB credentials not available on this device")
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001
             _LOGGER.debug("Error fetching SMB credentials: %s", err)
 
     return diag

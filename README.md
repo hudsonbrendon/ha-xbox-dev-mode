@@ -1,4 +1,17 @@
+<p align="center">
+  <img src="custom_components/xbox_dev_mode/brand/logo@2x.png" alt="Xbox Dev Mode" height="128">
+</p>
+
 # Xbox Dev Mode
+
+[![Tests](https://github.com/hudsonbrendon/ha-xbox-dev-mode/actions/workflows/tests.yml/badge.svg)](https://github.com/hudsonbrendon/ha-xbox-dev-mode/actions/workflows/tests.yml)
+[![Hassfest](https://github.com/hudsonbrendon/ha-xbox-dev-mode/actions/workflows/hassfest.yml/badge.svg)](https://github.com/hudsonbrendon/ha-xbox-dev-mode/actions/workflows/hassfest.yml)
+[![HACS](https://github.com/hudsonbrendon/ha-xbox-dev-mode/actions/workflows/validate.yml/badge.svg)](https://github.com/hudsonbrendon/ha-xbox-dev-mode/actions/workflows/validate.yml)
+[![Release](https://img.shields.io/github/v/release/hudsonbrendon/ha-xbox-dev-mode?sort=semver)](https://github.com/hudsonbrendon/ha-xbox-dev-mode/releases)
+[![Downloads](https://img.shields.io/github/downloads/hudsonbrendon/ha-xbox-dev-mode/total)](https://github.com/hudsonbrendon/ha-xbox-dev-mode/releases)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/)
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.12.0%2B-18BCF2?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/)
+[![License](https://img.shields.io/github/license/hudsonbrendon/ha-xbox-dev-mode)](LICENSE)
 
 Xbox Dev Mode integration for Home Assistant. Monitor and control Xbox consoles running in Developer Mode.
 
@@ -26,6 +39,9 @@ If your console boots into retail mode, you'll see only the device powered off u
 - Setting adjustment
 
 ## Installation
+
+[![Open in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=hudsonbrendon&repository=ha-xbox-dev-mode&category=integration)
+[![Add integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=xbox_dev_mode)
 
 ### Via HACS (Recommended)
 

@@ -8,12 +8,12 @@ so faz sentido enviar input quando o portal esta ativo.
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 from homeassistant.components.remote import RemoteEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-
 from xbox_devportal import GAMEPAD_BUTTONS
 
 from .const import STATE_DEV

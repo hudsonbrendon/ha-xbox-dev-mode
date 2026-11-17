@@ -1,10 +1,10 @@
 """Image platform for Xbox Dev Mode integration."""
 from datetime import datetime
 
+import homeassistant.util.dt as dt_util
 from homeassistant.components.image import ImageEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-import homeassistant.util.dt as dt_util
 
 from .coordinator import XboxDevModeCoordinator
 from .entity import XboxEntity
@@ -47,7 +47,7 @@ class XboxScreenImage(XboxEntity, ImageEntity):
             return False
 
         # Screenshot must be available and not None
-        if self.coordinator.data.screenshot is None:
+        if self.coordinator.data.screenshot is None:  # noqa: SIM103
             return False
 
         return True

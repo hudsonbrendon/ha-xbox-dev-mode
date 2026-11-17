@@ -11,7 +11,6 @@ from .const import STATE_DEV
 from .coordinator import XboxDevModeCoordinator
 from .entity import XboxEntity
 
-
 BINARY_SENSORS = [
     BinarySensorEntityDescription(
         key="dev_mode",

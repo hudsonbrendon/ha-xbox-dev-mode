@@ -1,7 +1,8 @@
 """Sensor platform for Xbox Dev Mode integration."""
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Callable
+from datetime import UTC, datetime
+from typing import Any
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -127,7 +128,7 @@ SENSORS: list[XboxSensorDescription] = [
         key="devkit_certificate_expiration",
         translation_key="devkit_certificate_expiration",
         value_fn=lambda data: (
-            datetime.fromtimestamp(data.xbox_info.devkit_certificate_expiration, tz=timezone.utc)
+            datetime.fromtimestamp(data.xbox_info.devkit_certificate_expiration, tz=UTC)
             if data.xbox_info and data.xbox_info.devkit_certificate_expiration else None),
         device_class=SensorDeviceClass.TIMESTAMP,
         dev_only=True,

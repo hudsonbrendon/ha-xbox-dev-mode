@@ -1,6 +1,7 @@
 """Button platform for Xbox Dev Mode integration."""
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
 from homeassistant.const import EntityCategory

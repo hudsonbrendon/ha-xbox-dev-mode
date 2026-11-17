@@ -5,7 +5,6 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN, STATE_DEV
 from .coordinator import XboxDevModeCoordinator
 
-
 # Codinomes de placa que o /ext/xbox/info reporta em ConsoleType.
 _MODELO_COMERCIAL = {
     "Lockhart": "Xbox Series S",

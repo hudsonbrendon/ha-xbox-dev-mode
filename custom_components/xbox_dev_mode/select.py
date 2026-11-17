@@ -1,6 +1,7 @@
 """Select platform for Xbox Dev Mode integration."""
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.core import HomeAssistant
@@ -122,7 +123,7 @@ class XboxSelect(XboxEntity, SelectEntity):
         if setting_name is None:
             return False
 
-        if self.coordinator.data.settings.get(setting_name) is None:
+        if self.coordinator.data.settings.get(setting_name) is None:  # noqa: SIM103
             return False
 
         return True

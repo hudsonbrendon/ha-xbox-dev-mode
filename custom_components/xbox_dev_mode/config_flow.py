@@ -1,15 +1,25 @@
 import logging
 from urllib.parse import urlparse
+
 import aiohttp
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from xbox_devportal import XboxDevPortal, AuthError, DevPortalUnreachable
-from .const import (DOMAIN, DEFAULT_PORT, CONF_SCAN_INTERVAL, CONF_SCREENSHOT_INTERVAL,
-                    CONF_SETTINGS_INTERVAL, DEFAULT_SCAN_INTERVAL,
-                    DEFAULT_SCREENSHOT_INTERVAL, DEFAULT_SETTINGS_INTERVAL,
-                    MIN_SCAN_INTERVAL, MIN_SETTINGS_INTERVAL)
+from xbox_devportal import AuthError, DevPortalUnreachable, XboxDevPortal
+
+from .const import (
+    CONF_SCAN_INTERVAL,
+    CONF_SCREENSHOT_INTERVAL,
+    CONF_SETTINGS_INTERVAL,
+    DEFAULT_PORT,
+    DEFAULT_SCAN_INTERVAL,
+    DEFAULT_SCREENSHOT_INTERVAL,
+    DEFAULT_SETTINGS_INTERVAL,
+    DOMAIN,
+    MIN_SCAN_INTERVAL,
+    MIN_SETTINGS_INTERVAL,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -75,7 +85,7 @@ class XboxDevModeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             async with session.get(f"https://{host}:{DEFAULT_PORT}/", ssl=False,
                                    timeout=aiohttp.ClientTimeout(total=5)) as r:
                 return r.status > 0
-        except Exception:
+        except Exception:  # noqa: BLE001
             return False
 
     async def async_step_ssdp(self, discovery_info):

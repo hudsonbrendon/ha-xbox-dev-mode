@@ -1,24 +1,24 @@
 """Xbox Dev Mode Coordinator with tri-state logic."""
 import logging
 from dataclasses import dataclass, field
-
 from datetime import timedelta
-from icmplib import async_ping
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from icmplib import async_ping
 from xbox_devportal import (
     AuthError,
-    DevPortalUnreachable,
     DeviceInfo,
-    SystemPerf,
-    Process,
+    DevPortalUnreachable,
     Package,
+    Process,
     Setting,
+    SystemPerf,
     XboxInfo,
     XboxUser,
 )
 
-from .const import DOMAIN, STATE_DEV, STATE_RETAIL, STATE_OFF
+from .const import DOMAIN, STATE_DEV, STATE_OFF, STATE_RETAIL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -119,7 +119,7 @@ class XboxDevModeCoordinator(DataUpdateCoordinator[XboxData]):
             # "desligado" sem evidencia e pior que admitir incerteza.
             try:
                 ping = await async_ping(self._host, count=1, timeout=1, privileged=False)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 _LOGGER.debug("ICMP indisponivel; sem distinguir retail de desligado")
                 return XboxData(state=STATE_RETAIL)
             return XboxData(state=STATE_RETAIL if ping.is_alive else STATE_OFF)
